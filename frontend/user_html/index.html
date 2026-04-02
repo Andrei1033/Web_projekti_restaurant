@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+      <!-- external imports -->
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+      <!-- Own CSS -->
+      <link rel="stylesheet" href="../css/user_css/user_main.css" />
+
+      <!-- Own JavaScript -->
+      <script src="../js/user_js/design.js" defer></script>
+
+      <title>Night Wolf restaurant</title>
+   </head>
+   <body>
+
+      <!-- Header start -->
+      <header id="site-header">
+
+         <!-- Animated ember particles (decorative) -->
+         <div class="ember-layer" aria-hidden="true">
+         <span class="ember"></span>
+         <span class="ember"></span>
+         <span class="ember"></span>
+         <span class="ember"></span>
+         <span class="ember"></span>
+         <span class="ember"></span>
+         <span class="ember"></span>
+         </div>
+
+         <!-- Red glow line at top edge -->
+         <div class="header-glow-line"></div>
+
+         <!-- Logo -->
+         <div id="title">
+         <img src="../assets/nightwolf_logo2.svg" alt="Night Wolf restaurant logo" id="logo" />
+         </div>
+
+         <!-- Nav links (desktop) -->
+         <nav id="main-nav" aria-label="Main navigation">
+         <a href="#" class="nav-link">Menu</a>
+         <a href="#" class="nav-link">Order</a>
+         <a href="#" class="nav-link">About</a>
+         </nav>
+
+         <!-- Action buttons -->
+         <div id="header_buttons">
+
+         <!-- Language selector -->
+         <button class="header_btn" id="lang_select_button" aria-label="Select language" title="Language">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+               <circle cx="12" cy="12" r="10"/>
+               <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+         </button>
+
+         <!-- Login (visible when logged out) -->
+         <button class="header_btn" id="login_button" aria-label="Log in" title="Login">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+               <polyline points="10 17 15 12 10 7"/>
+               <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+         </button>
+
+         <!-- Profile (visible when logged in — add/remove .hidden class via JS) -->
+         <button class="header_btn hidden" id="profile_button" aria-label="Profile" title="Profile">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+               <circle cx="12" cy="7" r="4"/>
+            </svg>
+         </button>
+
+         <!-- Cart button with badge -->
+         <button class="header_btn cart-btn" id="shopping_list" aria-label="Shopping cart" title="Cart">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+               <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <span class="cart-badge" id="cart-count">0</span>
+         </button>
+
+         </div>
+      </header>
+      <!-- Header end -->
+
+      <!-- ── HERO SECTION (shows parallax + video usage) ── -->
+      <section class="hero" id="hero">
+         <div class="hero-bg-overlay"></div>
+         <!-- Replace src with an actual video file for production -->
+
+         <video class="hero-video" id="videoForward" autoplay muted playsinline>
+         <source src="../assets/hero_bg.mp4" type="video/mp4">
+         </video>
+
+         <video class="hero-video" id="videoReverse" muted playsinline style="display:none;">
+         <source src="../assets/hero_bg_rev.mp4" type="video/mp4">
+         </video>
+
+         <div class="hero-content" data-parallax="0.4">
+         <p class="hero-eyebrow">Helsinki · Daily Rotating Menu</p>
+         <h1 class="hero-title">NIGHT<span class="red">WOLF</span></h1>
+         <p class="hero-sub">Premium Dining</p>
+         <a href="#" class="hero-cta">View Today's Menu</a>
+         </div>
+         <div class="hero-scroll-hint" aria-hidden="true">
+         <span></span>
+         </div>
+      </section>
+
+   </body>
+</html>

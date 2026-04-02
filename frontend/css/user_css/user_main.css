@@ -1,0 +1,416 @@
+/* ============================================================
+   NightWolf Kitchen — Main Stylesheet
+   Palette: #171925 bg · #ba201e red · #c8c8c8 silver · #ffffff white
+   Fonts: Bebas Neue (display) · DM Sans (body)
+   ============================================================ */
+
+/* ── CSS Variables ── */
+:root {
+  --bg:        #171925;
+  --bg-deep:   #0e1018;
+  --red:       #ba201e;
+  --red-glow:  #e0302e;
+  --silver:    #c8c8cc;
+  --white:     #f2f0ec;
+  --glass:     rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.09);
+  --header-h:  125px;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-deep);
+  color: var(--white);
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+#site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+
+  background: linear-gradient(
+    90deg,
+    var(--bg-deep) 0%,
+    rgba(23, 25, 37, 0.96) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(186, 32, 30, 0.25);
+
+  /* Entrance animation */
+  animation: headerFadeIn 0.8s ease both;
+}
+
+@keyframes headerFadeIn {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Red glow line ── */
+.header-glow-line {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--red) 40%, var(--red-glow) 60%, transparent 100%);
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1; }
+}
+
+/* ── Ember particles ── */
+.ember-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ember {
+  position: absolute;
+  bottom: 0;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--red-glow);
+  opacity: 0;
+  animation: emberRise var(--d, 3s) var(--delay, 0s) ease-in infinite;
+}
+
+/* Spread embers at different positions & timings */
+.ember:nth-child(1) { left: 12%;  --d: 3.2s; --delay: 0.0s; background: #e04020; }
+.ember:nth-child(2) { left: 28%;  --d: 2.8s; --delay: 0.7s; background: #cc2010; width:2px; height:2px; }
+.ember:nth-child(3) { left: 45%;  --d: 3.8s; --delay: 1.2s; }
+.ember:nth-child(4) { left: 58%;  --d: 2.5s; --delay: 0.3s; background: #ff5030; width:4px; height:4px; }
+.ember:nth-child(5) { left: 70%;  --d: 3.5s; --delay: 1.8s; }
+.ember:nth-child(6) { left: 82%;  --d: 2.9s; --delay: 0.9s; background: #e03018; }
+.ember:nth-child(7) { left: 93%;  --d: 4.0s; --delay: 0.5s; width:2px; height:2px; }
+
+@keyframes emberRise {
+  0%   { opacity: 0;   transform: translateY(0)    scale(1);   }
+  20%  { opacity: 0.9; }
+  80%  { opacity: 0.4; }
+  100% { opacity: 0;   transform: translateY(-80px) scale(0.3) translateX(10px); }
+}
+
+/* ── Logo ── */
+#title {
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+#logo {
+  height: 110px;
+  width: auto;
+  display: block;
+  /* Subtle drop-shadow matching logo colours */
+  filter: drop-shadow(0 0 8px rgba(186, 32, 30, 0.35));
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+#logo:hover {
+  filter: drop-shadow(0 0 14px rgba(186, 32, 30, 0.65));
+  transform: scale(1.03);
+}
+
+/* ── Nav links ── */
+#main-nav {
+  display: flex;
+  gap: 36px;
+  z-index: 1;
+}
+
+.nav-link {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  color: var(--silver);
+  text-decoration: none;
+  position: relative;
+  transition: color 0.25s;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 50%; right: 50%;
+  height: 1.5px;
+  background: var(--red-glow);
+  transition: left 0.25s ease, right 0.25s ease;
+  box-shadow: 0 0 6px var(--red);
+}
+
+.nav-link:hover {
+  color: var(--white);
+}
+
+.nav-link:hover::after {
+  left: 0; right: 0;
+}
+
+/* ── Header action buttons ── */
+#header_buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1;
+}
+
+.header_btn {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--silver);
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s ease, border-color 0.25s ease,
+              color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.header_btn:hover {
+  background: rgba(186, 32, 30, 0.18);
+  border-color: rgba(186, 32, 30, 0.6);
+  color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 18px rgba(186, 32, 30, 0.3);
+}
+
+.header_btn:active {
+  transform: translateY(0);
+}
+
+.btn-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Cart badge */
+.cart-btn { overflow: visible; }
+
+.cart-badge {
+  position: absolute;
+  top: -6px; right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-deep);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+.cart-btn:hover .cart-badge {
+  transform: scale(1.15);
+}
+
+/* Hide/show auth buttons via JS */
+.hidden { display: none !important; }
+
+/* ============================================================
+   HERO SECTION  (parallax-ready + video-ready)
+   ============================================================ */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Static fallback background — replace with video for production */
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 60%, rgba(186,32,30,0.12) 0%, transparent 70%),
+    linear-gradient(170deg, #0e1018 0%, #171925 50%, #1a0a08 100%);
+}
+
+/* Video layer — uncomment <video> tag in HTML when ready */
+.hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Dark overlay on top of video */
+.hero-bg-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(to bottom,
+      rgba(14,16,24,0.55) 0%,
+      rgba(14,16,24,0.35) 50%,
+      rgba(14,16,24,0.85) 100%
+    );
+}
+
+/* Hero content with parallax data attr (read by JS) */
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 0 24px;
+  /* Entrance */
+  animation: heroReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-eyebrow {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--red-glow);
+  margin-bottom: 12px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 0.8s forwards;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(72px, 14vw, 160px);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  text-shadow: 0 0 60px rgba(186,32,30,0.25);
+  opacity: 0;
+  animation: fadeUp 0.9s ease 0.5s forwards;
+}
+
+.hero-title .red {
+  color: var(--red);
+  text-shadow: 0 0 40px rgba(186,32,30,0.5);
+}
+
+.hero-sub {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--silver);
+  margin-top: 8px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 1.0s forwards;
+}
+
+.hero-cta {
+  display: inline-block;
+  margin-top: 40px;
+  padding: 14px 40px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  color: var(--white);
+  text-decoration: none;
+  border: 1px solid var(--red);
+  border-radius: 4px;
+  background: rgba(186,32,30,0.08);
+  transition: background 0.3s, box-shadow 0.3s, transform 0.25s;
+  opacity: 0;
+  animation: fadeUp 0.8s ease 1.2s forwards;
+}
+
+.hero-cta:hover {
+  background: rgba(186,32,30,0.28);
+  box-shadow: 0 0 30px rgba(186,32,30,0.4), inset 0 0 20px rgba(186,32,30,0.1);
+  transform: translateY(-3px);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll hint arrow */
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.hero-scroll-hint span {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-right: 1.5px solid var(--silver);
+  border-bottom: 1.5px solid var(--silver);
+  transform: rotate(45deg);
+  opacity: 0.4;
+  animation: scrollBounce 1.6s ease-in-out infinite;
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: rotate(45deg) translateY(0);   opacity: 0.4; }
+  50%       { transform: rotate(45deg) translateY(6px); opacity: 0.8; }
+}
+
+/* ============================================================
+   PARALLAX — JavaScript reads data-parallax="0.4"
+   and applies transform: translateY() on scroll
+   ============================================================ */
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+  #main-nav { display: none; }
+
+  #site-header {
+      padding: 0 16px;
+      height: 100px;
+   }
+
+  #logo { height: 90px; }
+
+  .header_btn { width: 40px; height: 40px; }
+
+  .hero-title { font-size: clamp(56px, 18vw, 100px); }
+}
+
+@media (max-width: 500px) {
+   #site-header {
+      height: 80px;
+   }
+
+   #logo { height: 70px; }
+}
