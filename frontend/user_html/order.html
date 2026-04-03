@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <!-- external imports -->
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+      <!-- Own CSS -->
+      <link rel="stylesheet" href="../css/user_css/order.css" />
+      <link rel="stylesheet" href="../css/user_css/user_main.css" />
+      <link rel="stylesheet" href="../css/user_css/modals.css" />
+
+      <!-- Own JavaScript -->
+       <script src="../js/user_js/order.js"></script>
+      <script src="../js/user_js/modals.js" defer></script>
+
+      <title>Order Online | Night Wolf</title>
+   </head>
+   <body>
+      <!-- Modals start-->
+      <div id="modal-overlay" class="modal-overlay hidden">
+
+         <div id="login-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">LOG <span class="red">IN</span></h2>
+            <form class="modal-form">
+               <div class="input-group">
+                  <label>Email</label>
+                  <input type="email" placeholder="wolf@night.fi" required>
+               </div>
+               <div class="input-group">
+                  <label>Password</label>
+                  <input type="password" placeholder="••••••••" required>
+               </div>
+               <button type="submit" class="hero-cta" style="width:100%; margin-top:20px;">Enter the Den</button>
+            </form>
+            <p class="modal-footer-text">New hunter? <a id="register_button" href="#" class="red">Register here</a></p>
+         </div>
+
+         <div id="register-modal" class="modal-content hidden">
+            <button class="close-modal" aria-label="Close">&times;</button>
+            <h2 class="modal-title">JOIN THE <span class="red">PACK</span></h2>
+
+            <form class="modal-form">
+               <div class="input-row">
+                  <div class="input-group">
+                     <label>Username</label>
+                     <input type="text" placeholder="NightHunter" required>
+                  </div>
+               </div>
+
+               <div class="input-group">
+                  <label>Email Address</label>
+                  <input type="email" placeholder="wolf@night.fi" required>
+               </div>
+
+               <div class="input-row-grid">
+                  <div class="input-group">
+                     <label>Password</label>
+                     <input type="password" placeholder="••••••••" required>
+                  </div>
+                  <div class="input-group">
+                     <label>Confirm Password</label>
+                     <input type="password" placeholder="••••••••" required>
+                  </div>
+               </div>
+
+               <div class="terms-checkbox">
+                  <input type="checkbox" id="terms" required>
+                  <label for="terms">I accept the <a href="#" class="red">Terms of the Hunt</a></label>
+               </div>
+
+               <button type="submit" class="hero-cta" style="width:100%; margin-top:10px;">Create Account</button>
+            </form>
+
+            <p class="modal-footer-text">Already a member? <a href="#" id="to-login" class="red">Log in here</a></p>
+         </div>
+
+         <div id="cart-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">YOUR <span class="red">CART</span></h2>
+            <div id="cart-items-container">
+               <p class="empty-msg">Your cart is currently empty.</p>
+               </div>
+            <div class="cart-total-section">
+               <div class="total-row"><span>Total:</span><span id="cart-total-price">0.00€</span></div>
+               <button class="hero-cta" style="width:100%; margin-top:20px;">Proceed to Checkout</button>
+            </div>
+         </div>
+
+         <div id="profile-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">MY <span class="red">PROFILE</span></h2>
+            <div class="profile-info">
+               <div class="profile-avatar">🐺</div>
+               <p><strong>Username:</strong> NightHunter_01</p>
+               <p><strong>Email:</strong> hunter@night.fi</p>
+            </div>
+            <div class="profile-actions">
+               <button class="nav-link" style="border:none; background:none; cursor:pointer;">Order History</button>
+               <button id="logout-btn" class="hero-cta" style="border-color:var(--silver); color:var(--silver);">Logout</button>
+            </div>
+         </div>
+
+         <div id="lang-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">SELECT <span class="red">LANGUAGE</span></h2>
+            <div class="lang-options">
+               <button class="lang-opt-btn active" data-lang="en">English (UK)</button>
+               <button class="lang-opt-btn" data-lang="fi">Suomi (FI)</button>
+            </div>
+         </div>
+
+      </div>
+      <!-- Modals end -->
+
+      <header id="site-header">
+         <div class="header-glow-line"></div>
+         <div id="title">
+            <a href="index.html">
+                <img src="../assets/nightwolf_logo2.svg" alt="Night Wolf logo" id="logo" />
+            </a>
+         </div>
+         <nav id="main-nav" aria-label="Main navigation">
+            <a href="../user_html/index.html#week-menu" class="nav-link">Menu</a>
+            <a href="../user_html/order.html" class="nav-link">Order</a>
+            <a href="../user_html/about.html" class="nav-link">About</a>
+         </nav>
+         <!-- Action buttons -->
+         <div id="header_buttons">
+
+            <!-- Language selector -->
+            <button class="header_btn" id="lang_select_button" aria-label="Select language" title="Language">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+               </svg>
+            </button>
+
+            <!-- Login (visible when logged out) -->
+            <button class="header_btn" id="login_button" aria-label="Log in" title="Login">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                  <polyline points="10 17 15 12 10 7"/>
+                  <line x1="15" y1="12" x2="3" y2="12"/>
+               </svg>
+            </button>
+
+            <!-- Profile (visible when logged in — add/remove .hidden class via JS) -->
+            <button class="header_btn hidden" id="profile_button" aria-label="Profile" title="Profile">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+               </svg>
+            </button>
+
+            <!-- Cart button with badge -->
+            <button class="header_btn cart-btn" id="shopping_list" aria-label="Shopping cart" title="Cart">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+               </svg>
+               <span class="cart-badge" id="cart-count">0</span>
+            </button>
+
+         </div>
+      </header>
+
+      <main class="order-page">
+         <section class="order-nav-section">
+            <div class="day-selector">
+               <button id="prev-day" class="nav-arrow">←</button>
+               <div class="current-day-display">
+                  <h1 id="display-day-name">MONDAY</h1>
+                  <p id="display-date">Oct 12th</p>
+               </div>
+               <button id="next-day" class="nav-arrow">→</button>
+            </div>
+         </section>
+
+         <section class="menu-container">
+            <div id="order-menu-list" class="menu-grid">
+               </div>
+         </section>
+      </main>
+
+      <div id="modal-overlay" class="modal-overlay hidden">
+          </div>
+   </body>
+</html>
