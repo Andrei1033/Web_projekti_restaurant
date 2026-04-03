@@ -5,6 +5,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>NightWolf Admin - Tilaukset</title>
       <link rel="stylesheet" href="./css/style.css" />
+      <script src="./js/admin.js" defer></script>
    </head>
    <body>
       <header class="topbar">
@@ -34,7 +35,7 @@
                <h2>Tilausten hallinta</h2>
                <p>Seuraa ja hallinnoi asiakkaiden tilauksia</p>
             </div>
-            <button class="primary-btn">+ Uusi tilaus</button>
+            <button class="primary-btn" onclick="openModal('orderModal')">+ Uusi tilaus</button>
          </section>
 
          <section class="stats">
@@ -146,6 +147,52 @@
                   <div class="total-row"><span>Yhteensä:</span><span>23.80€</span></div>
                </div>
             </section>
+
+            <!-- TILAUS MODAL -->
+            <div id="orderModal" class="modal">
+               <div class="modal-content wide">
+                  <h2>Lisää uusi tilaus</h2>
+
+                  <div class="form-grid">
+                     <div>
+                        <label>Asiakkaan nimi *</label>
+                        <input type="text" placeholder="Esim. Matti Meikäläinen" />
+                     </div>
+
+                     <div>
+                        <label>Sähköposti *</label>
+                        <input type="email" placeholder="esimerkki@email.com" />
+                     </div>
+
+                     <div class="full">
+                        <label>Tilatut tuotteet *</label>
+
+                        <div class="order-row">
+                           <input type="text" placeholder="Tuotteen nimi" />
+                           <input type="number" value="1" />
+                           <input type="number" value="0" />
+                        </div>
+
+                        <button class="add-item">+ Lisää tuote</button>
+                     </div>
+
+                     <div class="full">
+                        <label>Huomiot (valinnainen)</label>
+                        <textarea placeholder="Esim. Extra sipulia kiitos!"></textarea>
+                     </div>
+
+                     <div class="full total-box">
+                        <span>Yhteensä:</span>
+                        <strong id="orderTotal">0.00€</strong>
+                     </div>
+                  </div>
+
+                  <div class="modal-actions">
+                     <button class="primary-btn">💾 Tallenna tilaus</button>
+                     <button onclick="closeModal('orderModal')">Peruuta</button>
+                  </div>
+               </div>
+            </div>
          </div>
       </main>
    </body>
