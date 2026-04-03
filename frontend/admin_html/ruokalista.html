@@ -34,7 +34,7 @@
                <h2>Ruokalistan hallinta</h2>
                <p>Lisää, muokkaa ja poista ruokalajeja</p>
             </div>
-            <button class="primary-btn">+ Lisää uusi ruokalaji</button>
+            <button class="primary-btn" onclick="openModal('foodModal')">+ Lisää uusi ruokalaji</button>
          </section>
 
          <section class="filter-card">
@@ -63,6 +63,54 @@
                <div class="actions" style="margin-top: 10px">
                   <button class="icon-btn">✎</button>
                   <button class="icon-btn red">🗑</button>
+               </div>
+            </div>
+
+            <!-- MODAL: Lisää ruokalaji -->
+            <div id="foodModal" class="modal">
+               <div class="modal-content wide">
+                  <h2>Lisää uusi ruokalaji</h2>
+
+                  <div class="form-grid">
+                     <div>
+                        <label>Nimi *</label>
+                        <input type="text" placeholder="Esim. Tonkotsu Ramen" />
+                     </div>
+
+                     <div>
+                        <label>Hinta (€) *</label>
+                        <input type="number" value="0" />
+                     </div>
+
+                     <div class="full">
+                        <label>Kuvaus *</label>
+                        <textarea placeholder="Kerro ruokalajista..."></textarea>
+                     </div>
+
+                     <div>
+                        <label>Päivämäärä *</label>
+                        <input type="date" />
+                     </div>
+
+                     <div>
+                        <label>Teema *</label>
+                        <input type="text" placeholder="Esim. Ramen, Tacos, Sushi..." />
+                     </div>
+
+                     <div class="full">
+                        <label>Erityisruokavaliot</label>
+                        <div class="checkboxes">
+                           <label><input type="checkbox" /> Vegaaninen</label>
+                           <label><input type="checkbox" /> Gluteeniton</label>
+                           <label><input type="checkbox" /> Laktoositon</label>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="modal-actions">
+                     <button class="primary-btn">💾 Lisää ruokalaji</button>
+                     <button onclick="closeModal('foodModal')">Peruuta</button>
+                  </div>
                </div>
             </div>
          </section>

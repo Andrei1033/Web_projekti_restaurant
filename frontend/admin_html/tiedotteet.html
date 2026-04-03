@@ -30,11 +30,13 @@
 
       <main class="container">
          <section class="page-head">
-            <div>
-               <h2>Tiedotteiden hallinta</h2>
-               <p>Julkaise ja hallinnoi asiakastiedotteita</p>
-            </div>
-            <button class="primary-btn">+ Lisää uusi tiedote</button>
+         <div>
+            <h2>Tiedotteiden hallinta</h2>
+            <p>Julkaise ja hallinnoi asiakastiedotteita</p>
+         </div>
+         <button class="primary-btn" onclick="openModal('noticeModal')">
+          + Lisää uusi tiedote
+         </button>
          </section>
 
          <section class="stats" style="grid-template-columns: repeat(3, 1fr)">
@@ -103,7 +105,7 @@
             <div class="notice-top">
                <div>
                   <h3>Uusi vegaaninen vaihtoehto</h3>
-                  <small>Tiedote</small>
+                  <small>Tiedote</small><section class="page-head">
                </div>
                <div class="notice-actions">
                   <button class="icon-btn">✕</button>
@@ -115,7 +117,52 @@
             <div class="notice-meta">
                <span>📅 Luotu: 25. maaliskuuta 2026 klo 09.00</span>
             </div>
+
          </section>
+
+         <div id="noticeModal" class="modal">
+            <div class="modal-content wide">
+               <h2>Lisää uusi tiedote</h2>
+
+               <div class="form-grid">
+                  <div class="full">
+                     <label>Otsikko *</label>
+                     <input type="text" placeholder="Esim. Uusi viikonlopun erikoisuus!" />
+                  </div>
+
+                  <div class="full">
+                     <label>Viesti *</label>
+                     <textarea placeholder="Kirjoita tiedote..."></textarea>
+                  </div>
+
+                  <div>
+                     <label>Tyyppi *</label>
+                     <select>
+                        <option>Tiedote</option>
+                        <option>Uutinen</option>
+                        <option>Varoitus</option>
+                     </select>
+                  </div>
+
+                  <div>
+                     <label>Vanhenee (valinnainen)</label>
+                     <input type="date" />
+                  </div>
+
+                  <div class="full checkbox-row">
+                     <label>
+                        <input type="checkbox" checked />
+                        Aktiivinen (näkyy asiakkaille)
+                     </label>
+                  </div>
+               </div>
+
+               <div class="modal-actions">
+                  <button class="primary-btn">💾 Julkaise tiedote</button>
+                  <button onclick="closeModal('noticeModal')">Peruuta</button>
+               </div>
+            </div>
+         </div>
       </main>
    </body>
 </html>
