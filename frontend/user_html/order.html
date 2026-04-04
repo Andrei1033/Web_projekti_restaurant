@@ -13,7 +13,7 @@
       <link rel="stylesheet" href="../css/user_css/modals.css" />
 
       <!-- Own JavaScript -->
-       <script src="../js/user_js/order.js"></script>
+       <script src="../js/user_js/order.js" defer></script>
       <script src="../js/user_js/modals.js" defer></script>
 
       <title>Order Online | Night Wolf</title>
@@ -22,6 +22,7 @@
       <!-- Modals start-->
       <div id="modal-overlay" class="modal-overlay hidden">
 
+         <!-- Login Modal -->
          <div id="login-modal" class="modal-content hidden">
             <button class="close-modal">&times;</button>
             <h2 class="modal-title">LOG <span class="red">IN</span></h2>
@@ -39,6 +40,7 @@
             <p class="modal-footer-text">New hunter? <a id="register_button" href="#" class="red">Register here</a></p>
          </div>
 
+         <!-- Register Modal -->
          <div id="register-modal" class="modal-content hidden">
             <button class="close-modal" aria-label="Close">&times;</button>
             <h2 class="modal-title">JOIN THE <span class="red">PACK</span></h2>
@@ -78,6 +80,7 @@
             <p class="modal-footer-text">Already a member? <a href="#" id="to-login" class="red">Log in here</a></p>
          </div>
 
+         <!-- Cart Modal -->
          <div id="cart-modal" class="modal-content hidden">
             <button class="close-modal">&times;</button>
             <h2 class="modal-title">YOUR <span class="red">CART</span></h2>
@@ -90,6 +93,7 @@
             </div>
          </div>
 
+         <!-- Profile Modal -->
          <div id="profile-modal" class="modal-content hidden">
             <button class="close-modal">&times;</button>
             <h2 class="modal-title">MY <span class="red">PROFILE</span></h2>
@@ -104,6 +108,7 @@
             </div>
          </div>
 
+         <!-- Language Modal -->
          <div id="lang-modal" class="modal-content hidden">
             <button class="close-modal">&times;</button>
             <h2 class="modal-title">SELECT <span class="red">LANGUAGE</span></h2>
@@ -113,8 +118,59 @@
             </div>
          </div>
 
+         <!-- Checkout Modal -->
+         <div id="checkout-modal" class="modal-content hidden">
+         <button class="close-modal" aria-label="Close">&times;</button>
+         <h2 class="modal-title">CONFIRM <span class="red">ORDER</span></h2>
+
+         <!-- Order summary inside modal -->
+         <div class="checkout-summary" id="checkout-summary">
+            <!-- Filled by JS -->
+         </div>
+
+         <div class="checkout-divider"></div>
+
+         <!-- Guest checkout form -->
+         <form class="modal-form" id="checkout-form" novalidate>
+            <p class="checkout-form-label">Your details</p>
+
+            <div class="input-row-grid">
+               <div class="input-group">
+                  <label for="co-name">User name</label>
+                  <input type="text" id="co-name" placeholder="Alex" required>
+               </div>
+            </div>
+
+            <div class="input-group">
+               <label for="co-email">Email address</label>
+               <input type="email" id="co-email" placeholder="wolf@night.fi" required>
+               <p class="input-hint">Order confirmation will be sent here.</p>
+            </div>
+
+            <!-- Account upsell -->
+            <div class="checkout-upsell">
+               <div class="upsell-icon">🐺</div>
+               <div class="upsell-text">
+               <strong>Join the Pack</strong>
+               <p>Save your order history & get exclusive member discounts.</p>
+               </div>
+               <a href="#" id="checkout-register-link" class="upsell-btn">Register free</a>
+            </div>
+
+            <!-- Total row -->
+            <div class="checkout-total-row">
+               <span>Total</span>
+               <span class="checkout-total-price" id="checkout-total-price">0.00 €</span>
+            </div>
+
+            <button type="submit" class="hero-cta" style="width:100%; margin-top:16px;">
+               Place Order
+            </button>
+         </form>
       </div>
-      <!-- Modals end -->
+
+   </div>
+   <!-- Modals end -->
 
       <header id="site-header">
          <div class="header-glow-line"></div>
@@ -169,21 +225,57 @@
       </header>
 
       <main class="order-page">
+         <!-- Day navigator -->
          <section class="order-nav-section">
-            <div class="day-selector">
-               <button id="prev-day" class="nav-arrow">←</button>
-               <div class="current-day-display">
-                  <h1 id="display-day-name">MONDAY</h1>
-                  <p id="display-date">Oct 12th</p>
+            <div class="order-day-nav">
+               <button id="prev-day" class="order-arrow-btn" aria-label="Previous day">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+               </button>
+
+               <div class="order-day-info">
+                  <p class="order-day-eyebrow">Daily Menu</p>
+                  <h1 id="display-day-name" class="order-day-name">MONDAY</h1>
+                  <p id="display-date" class="order-day-date">7 Apr 2026</p>
+                  <span id="order-today-pill" class="order-today-pill hidden">Today</span>
                </div>
-               <button id="next-day" class="nav-arrow">→</button>
+
+               <button id="next-day" class="order-arrow-btn" aria-label="Next day">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+               </button>
             </div>
          </section>
 
+         <!-- Menu list -->
          <section class="menu-container">
             <div id="order-menu-list" class="menu-grid">
-               </div>
+               <!-- Filled by order.js -->
+            </div>
          </section>
+
+         <!-- Sticky order summary bar -->
+         <div class="order-summary-bar" id="order-summary-bar">
+            <div class="osb-inner">
+               <div class="osb-left">
+                  <span class="osb-count" id="osb-item-count">0 items</span>
+                  <span class="osb-sep">·</span>
+                  <span class="osb-total" id="osb-total">0.00 €</span>
+               </div>
+               <button class="osb-checkout-btn" id="osb-checkout-btn" disabled>
+                  Proceed to checkout
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+               </button>
+            </div>
+         </div>
       </main>
 
       <div id="modal-overlay" class="modal-overlay hidden">

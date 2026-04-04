@@ -581,7 +581,7 @@ button {
    gap: 10px;
 }
 
-/* leveä modal */
+/* wide modal */
 .modal-content.wide {
    max-width: 900px;
 }
@@ -598,13 +598,13 @@ button {
    grid-column: 1 / -1;
 }
 
-/* textarea korkeampi */
+/* taller textarea */
 .modal textarea {
    min-height: 120px;
    resize: vertical;
 }
 
-/* checkboxit */
+/* checkboxes */
 .checkboxes {
    display: flex;
    gap: 16px;
@@ -618,7 +618,7 @@ button {
    font-weight: 500;
 }
 
-/* leveä modal */
+/* wide modal */
 .modal-content.wide {
    max-width: 900px;
 }
@@ -635,13 +635,13 @@ button {
    grid-column: 1 / -1;
 }
 
-/* textarea korkeampi */
+/* taller textarea */
 .modal textarea {
    min-height: 120px;
    resize: vertical;
 }
 
-/* checkboxit */
+/* checkboxes */
 .checkboxes {
    display: flex;
    gap: 16px;
@@ -655,7 +655,7 @@ button {
    font-weight: 500;
 }
 
-/* tilausrivi */
+/* order row */
 .order-row {
    display: grid;
    grid-template-columns: 1fr 80px 100px;
@@ -663,7 +663,7 @@ button {
    margin-top: 8px;
 }
 
-/* lisää tuote nappi */
+/* add product button */
 .add-item {
    margin-top: 10px;
    background: none;
@@ -673,7 +673,7 @@ button {
    cursor: pointer;
 }
 
-/* yhteensä boksi */
+/* total box */
 .total-box {
    display: flex;
    justify-content: space-between;

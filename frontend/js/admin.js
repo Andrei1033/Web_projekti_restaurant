@@ -1,14 +1,15 @@
-// Avaa modal
+/* eslint-disable no-unused-vars */
+// Open modal
 function openModal(id) {
    document.getElementById(id).style.display = 'flex';
 }
 
-// Sulje modal
+// Close modal
 function closeModal(id) {
    document.getElementById(id).style.display = 'none';
 }
 
-// Sulje kun klikataan taustaa
+// Close when clicking the overlay/background
 window.onclick = function (e) {
    document.querySelectorAll('.modal').forEach((modal) => {
       if (e.target === modal) {
@@ -17,7 +18,7 @@ window.onclick = function (e) {
    });
 };
 
-// Lataa modals.html automaattisesti
+// Load modals.html automatically
 document.addEventListener('DOMContentLoaded', () => {
    fetch('modals.html')
       .then((res) => res.text())
@@ -26,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 });
 
-// lisää uusi tuoterivi
+// add new product row
 document.addEventListener('click', function (e) {
    if (e.target.classList.contains('add-item')) {
       const row = document.createElement('div');

@@ -90,15 +90,12 @@
 }
 
 /* REGISTER SPECIFIC STYLES */
-/* Ruudukko salasanakentille */
+/* Grid for password fields */
 .input-row-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
     margin-bottom: 15px;
 }
 
-/* Checkboxin tyylit */
+/* Checkbox styles */
 .terms-checkbox {
     display: flex;
     align-items: center;
@@ -124,7 +121,7 @@
     text-decoration: underline;
 }
 
-/* Teksti modaalin alareunassa */
+/* Modal footer text */
 .modal-footer-text {
     margin-top: 25px;
     text-align: center;
@@ -142,7 +139,7 @@
     text-decoration: underline;
 }
 
-/* Responsiivisuus pienille näytöille */
+/* Responsive rules for small screens */
 @media (max-width: 480px) {
     .input-row-grid {
         grid-template-columns: 1fr;
