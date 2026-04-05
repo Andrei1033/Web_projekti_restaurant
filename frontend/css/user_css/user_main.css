@@ -480,8 +480,363 @@ body {
 }
 
 /* ============================================================
-   RESPONSIVE
+   WEEK MENU SECTION
    ============================================================ */
+
+.week-menu {
+  padding: 80px 48px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Section header ── */
+.wm-eyebrow {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--red-glow);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.wm-title {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 6vw, 64px);
+  letter-spacing: 0.06em;
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 48px;
+  line-height: 1;
+}
+
+.wm-title .red {
+  color: var(--red);
+  text-shadow: 0 0 30px rgba(186,32,30,0.4);
+}
+
+/* ── Week navigator ── */
+.wm-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+.wm-nav-btn {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--silver);
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.wm-nav-btn svg { width: 20px; height: 20px; }
+
+.wm-nav-btn:hover {
+  background: rgba(186,32,30,0.18);
+  border-color: rgba(186,32,30,0.6);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+.wm-nav-btn:active { transform: translateY(0); }
+
+.wm-week-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 220px;
+  text-align: center;
+}
+
+#wm-week-text {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--white);
+  letter-spacing: 0.04em;
+}
+
+.wm-current-badge {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red);
+  background: rgba(186,32,30,0.12);
+  border: 1px solid rgba(186,32,30,0.35);
+  border-radius: 20px;
+  padding: 3px 12px;
+  transition: opacity 0.3s;
+}
+
+.wm-current-badge.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Day cards grid ── */
+.wm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  /* Fade in on week change */
+  transition: opacity 0.2s ease;
+}
+
+.wm-grid.fading { opacity: 0; }
+
+/* ── Individual day card ── */
+.wm-card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 24px 20px;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  /* Entrance animation — set via JS */
+  opacity: 0;
+  transform: translateY(16px);
+  animation: cardReveal 0.4s ease forwards;
+}
+
+@keyframes cardReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bottom glow line */
+.wm-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--red), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.wm-card:hover {
+  background: rgba(186,32,30,0.08);
+  border-color: rgba(186,32,30,0.4);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 20px rgba(186,32,30,0.12);
+}
+
+.wm-card:hover::after { opacity: 1; }
+
+/* TODAY highlight */
+.wm-card.is-today {
+  background: rgba(186,32,30,0.1);
+  border-color: rgba(186,32,30,0.55);
+  box-shadow: 0 0 24px rgba(186,32,30,0.15);
+}
+
+.wm-card.is-today::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--red-glow), transparent);
+}
+
+.wm-card.is-today:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 30px rgba(186,32,30,0.25);
+}
+
+/* Past days — dimmed */
+.wm-card.is-past {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Empty / no menu card */
+.wm-card.is-empty {
+  cursor: default;
+  pointer-events: none;
+}
+
+.wm-card.is-empty:hover {
+  background: var(--glass);
+  border-color: var(--glass-border);
+  transform: none;
+  box-shadow: none;
+}
+
+.wm-card.is-empty::after { display: none; }
+
+/* ── Card parts ── */
+.wm-card-day-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wm-card-day {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: var(--silver);
+}
+
+.wm-card-date {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(200,200,204,0.45);
+}
+
+.wm-today-pill {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red-glow);
+  background: rgba(186,32,30,0.18);
+  border: 1px solid rgba(186,32,30,0.4);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+/* ── Card image area ── */
+.wm-card-img {
+  width: 100%;
+  height: 140px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #1a1a1a;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.wm-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.wm-card:hover .wm-card-img img {
+  transform: scale(1.06);
+}
+
+/* Shown when image is missing or fails to load */
+.wm-img-missing {
+  background:
+    linear-gradient(135deg, #1a1000 0%, #0e0e0e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-img-missing::after {
+  content: '🐺';
+  font-size: 36px;
+  opacity: 0.18;
+}
+
+/* "Today" ribbon over image */
+.wm-img-today-ribbon {
+  position: absolute;
+  top: 10px; left: -1px;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 2px 8px rgba(186,32,30,0.4);
+}
+
+.wm-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.wm-card-theme {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--white);
+  line-height: 1.1;
+}
+
+.wm-card-desc {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--silver);
+  line-height: 1.6;
+  flex: 1;
+}
+
+.wm-card-cta {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--red-glow);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  transition: gap 0.2s;
+}
+
+.wm-card:hover .wm-card-cta { gap: 8px; }
+
+.wm-card-cta svg {
+  width: 14px; height: 14px;
+  transition: transform 0.2s;
+}
+
+.wm-card:hover .wm-card-cta svg { transform: translateX(3px); }
+
+.wm-theme-empty {
+  color: var(--silver);
+  opacity: 0.4;
+}
+
+/* Empty state */
+.wm-empty-msg {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(200,200,204,0.35);
+  font-style: italic;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   RESPONSIVE
+============================================================*/
+
 @media (max-width: 900px) {
   .about {
     flex-direction: column;
@@ -505,10 +860,19 @@ body {
   .hero-title { font-size: clamp(56px, 18vw, 100px); }
 }
 
+@media (max-width: 680px) {
+  .week-menu { padding: 60px 16px; }
+  .wm-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+
 @media (max-width: 500px) {
    #site-header {
       height: 80px;
    }
 
    #logo { height: 70px; }
+}
+
+@media (max-width: 420px) {
+  .wm-grid { grid-template-columns: 1fr; }
 }

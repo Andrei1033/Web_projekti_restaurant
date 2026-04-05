@@ -1,0 +1,179 @@
+/* ── MODAL SYSTEM ── */
+.modal-overlay {
+   position: fixed;
+   inset: 0;
+   background: rgba(14, 16, 24, 0.85);
+   backdrop-filter: blur(8px);
+   z-index: 1000;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   opacity: 0;
+   transition: opacity 0.3s ease;
+   pointer-events: none;
+}
+
+.modal-overlay.active {
+   opacity: 1;
+   pointer-events: auto;
+}
+
+.modal-content {
+   background: var(--bg);
+   border: 1px solid var(--glass-border);
+   padding: 40px;
+   border-radius: 12px;
+   width: 90%;
+   max-width: 450px;
+   position: relative;
+   transform: translateY(20px);
+   transition: transform 0.3s ease;
+   box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(186,32,30,0.1);
+}
+
+.modal-overlay.active .modal-content {
+   transform: translateY(0);
+}
+
+/* Close button */
+.close-modal {
+   position: absolute;
+   top: 20px; right: 20px;
+   background: none; border: none;
+   color: var(--silver); font-size: 28px;
+   cursor: pointer; transition: color 0.2s;
+}
+.close-modal:hover { color: var(--red); }
+
+.modal-title {
+   font-family: var(--font-display);
+   font-size: 32px; letter-spacing: 0.1em;
+   margin-bottom: 24px; text-align: center;
+}
+
+/* Form elements */
+.input-group { margin-bottom: 15px; }
+.input-group label { display: block; font-size: 12px; margin-bottom: 5px; color: var(--silver); }
+.input-group input {
+   width: 100%; padding: 12px;
+   background: rgba(255,255,255,0.05);
+   border: 1px solid var(--glass-border);
+   color: white; border-radius: 4px;
+}
+
+/* Language & Profile specific */
+.lang-options { display: flex; flex-direction: column; gap: 10px; }
+.lang-opt-btn {
+   padding: 15px; background: var(--glass);
+   border: 1px solid var(--glass-border);
+   color: var(--white); cursor: pointer; border-radius: 6px;
+   font-family: var(--font-body); transition: 0.3s;
+}
+.lang-opt-btn.active, .lang-opt-btn:hover {
+   border-color: var(--red); background: rgba(186,32,30,0.1);
+}
+
+.profile-avatar {
+   width: 80px; height: 80px; background: var(--glass);
+   border: 2px solid var(--red); border-radius: 50%;
+   margin: 0 auto 20px; display: flex; align-items: center;
+   justify-content: center; font-size: 40px;
+}
+
+.hero-cta {
+   margin-bottom: 10px;
+}
+
+#cart-total-price{
+   margin-left: 5px;
+   font-weight: bold;
+}
+
+/* REGISTER SPECIFIC STYLES */
+/* Grid for password fields */
+.input-row-grid {
+    margin-bottom: 15px;
+}
+
+/* Checkbox styles */
+.terms-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0;
+    font-size: 13px;
+    color: var(--silver);
+}
+
+.terms-checkbox input[type="checkbox"] {
+    accent-color: var(--red);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.terms-checkbox a {
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.terms-checkbox a:hover {
+    text-decoration: underline;
+}
+
+/* Profile modal specific */
+.profile-form .avatar-row {
+   display: flex;
+   gap: 18px;
+   align-items: center;
+   margin-bottom: 16px;
+}
+.avatar-wrapper {
+   width: 96px;
+   height: 96px;
+   border-radius: 50%;
+   overflow: hidden;
+   background: var(--glass);
+   border: 2px solid var(--glass-border);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+.avatar-preview {
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   display: block;
+}
+.avatar-placeholder {
+   font-size: 36px;
+}
+.avatar-controls { display:flex; flex-direction:column; gap:8px; }
+.avatar-upload-btn { padding:8px 12px; }
+.profile-form .help-text { font-size:12px; color:var(--silver); }
+.profile-actions { display:flex; gap:8px; margin-top:12px; }
+
+/* Modal footer text */
+.modal-footer-text {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--silver);
+}
+
+.modal-footer-text a {
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-footer-text a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive rules for small screens */
+@media (max-width: 480px) {
+    .input-row-grid {
+        grid-template-columns: 1fr;
+    }
+}

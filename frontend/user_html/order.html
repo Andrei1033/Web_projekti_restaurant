@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <!-- external imports -->
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+      <!-- Own CSS -->
+      <link rel="stylesheet" href="../css/user_css/order.css" />
+      <link rel="stylesheet" href="../css/user_css/user_main.css" />
+      <link rel="stylesheet" href="../css/user_css/modals.css" />
+
+      <!-- Own JavaScript -->
+       <script src="../js/user_js/order.js" defer></script>
+      <script src="../js/user_js/modals.js" defer></script>
+
+      <title>Order Online | Night Wolf</title>
+   </head>
+   <body>
+      <!-- Modals start-->
+      <div id="modal-overlay" class="modal-overlay hidden">
+
+         <!-- Login Modal -->
+         <div id="login-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">LOG <span class="red">IN</span></h2>
+            <form class="modal-form">
+               <div class="input-group">
+                  <label>Email</label>
+                  <input type="email" placeholder="wolf@night.fi" required>
+               </div>
+               <div class="input-group">
+                  <label>Password</label>
+                  <input type="password" placeholder="••••••••" required>
+               </div>
+               <button type="submit" class="hero-cta" style="width:100%; margin-top:20px;">Enter the Den</button>
+            </form>
+            <p class="modal-footer-text">New hunter? <a id="register_button" href="#" class="red">Register here</a></p>
+         </div>
+
+         <!-- Register Modal -->
+         <div id="register-modal" class="modal-content hidden">
+            <button class="close-modal" aria-label="Close">&times;</button>
+            <h2 class="modal-title">JOIN THE <span class="red">PACK</span></h2>
+
+            <form class="modal-form">
+               <div class="input-row">
+                  <div class="input-group">
+                     <label>Username</label>
+                     <input type="text" placeholder="NightHunter" required>
+                  </div>
+               </div>
+
+               <div class="input-group">
+                  <label>Email Address</label>
+                  <input type="email" placeholder="wolf@night.fi" required>
+               </div>
+
+               <div class="input-row-grid">
+                  <div class="input-group">
+                     <label>Password</label>
+                     <input type="password" placeholder="••••••••" required>
+                  </div>
+                  <div class="input-group">
+                     <label>Confirm Password</label>
+                     <input type="password" placeholder="••••••••" required>
+                  </div>
+               </div>
+
+               <div class="terms-checkbox">
+                  <input type="checkbox" id="terms" required>
+                  <label for="terms">I accept the <a href="#" class="red">Terms of the Hunt</a></label>
+               </div>
+
+               <button type="submit" class="hero-cta" style="width:100%; margin-top:10px;">Create Account</button>
+            </form>
+
+            <p class="modal-footer-text">Already a member? <a href="#" id="to-login" class="red">Log in here</a></p>
+         </div>
+
+         <!-- Cart Modal -->
+         <div id="cart-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">YOUR <span class="red">CART</span></h2>
+            <div id="cart-items-container">
+               <p class="empty-msg">Your cart is currently empty.</p>
+               </div>
+            <div class="cart-total-section">
+               <div class="total-row"><span>Total:</span><span id="cart-total-price">0.00€</span></div>
+               <button class="hero-cta" style="width:100%; margin-top:20px;">Proceed to Checkout</button>
+            </div>
+         </div>
+
+         <!-- Profile Modal -->
+         <div id="profile-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">MY <span class="red">PROFILE</span></h2>
+
+            <form id="profile-form" class="modal-form profile-form">
+               <div class="avatar-row">
+                  <div class="avatar-wrapper">
+                     <img src="../assets/default-avatar.png" alt="Avatar" id="avatar-preview" class="avatar-preview" />
+                     <div id="avatar-placeholder" class="avatar-placeholder">🐺</div>
+                  </div>
+                  <div class="avatar-controls">
+                     <input type="file" id="avatar-input" accept="image/*" class="hidden" />
+                     <button type="button" id="avatar-upload-btn" class="hero-cta">Upload Image</button>
+                     <p class="help-text">No image? A placeholder will be used.</p>
+                  </div>
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-name">Name</label>
+                  <input id="profile-name" name="name" type="text" placeholder="Your name" />
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-email">Email</label>
+                  <input id="profile-email" name="email" type="email" placeholder="you@example.com" />
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-password">Password</label>
+                  <input id="profile-password" name="password" type="password" placeholder="••••••••" />
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-phone">Phone</label>
+                  <input id="profile-phone" name="phone" type="tel" placeholder="e.g. +358 40 1234567" />
+               </div>
+
+               <div class="profile-actions">
+                  <button type="submit" class="hero-cta" style="width:48%;">Save</button>
+                  <button type="button" id="profile-logout" class="hero-cta" style="width:48%;">Logout</button>
+               </div>
+            </form>
+
+         </div>
+
+         <!-- Language Modal -->
+         <div id="lang-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">SELECT <span class="red">LANGUAGE</span></h2>
+            <div class="lang-options">
+               <button class="lang-opt-btn active" data-lang="en">English (UK)</button>
+               <button class="lang-opt-btn" data-lang="fi">Suomi (FI)</button>
+            </div>
+         </div>
+
+         <!-- Checkout Modal -->
+         <div id="checkout-modal" class="modal-content hidden">
+         <button class="close-modal" aria-label="Close">&times;</button>
+         <h2 class="modal-title">CONFIRM <span class="red">ORDER</span></h2>
+
+         <!-- Order summary inside modal -->
+         <div class="checkout-summary" id="checkout-summary">
+            <!-- Filled by JS -->
+         </div>
+
+         <div class="checkout-divider"></div>
+
+         <!-- Guest checkout form -->
+         <form class="modal-form" id="checkout-form" novalidate>
+            <p class="checkout-form-label">Your details</p>
+
+            <div class="input-row-grid">
+               <div class="input-group">
+                  <label for="co-name">User name</label>
+                  <input type="text" id="co-name" placeholder="Alex" required>
+               </div>
+            </div>
+
+            <div class="input-group">
+               <label for="co-email">Email address</label>
+               <input type="email" id="co-email" placeholder="wolf@night.fi" required>
+               <p class="input-hint">Order confirmation will be sent here.</p>
+            </div>
+
+            <!-- Account upsell -->
+            <div class="checkout-upsell">
+               <div class="upsell-icon">🐺</div>
+               <div class="upsell-text">
+               <strong>Join the Pack</strong>
+               <p>Save your order history & get exclusive member discounts.</p>
+               </div>
+               <a href="#" id="checkout-register-link" class="upsell-btn">Register free</a>
+            </div>
+
+            <!-- Total row -->
+            <div class="checkout-total-row">
+               <span>Total</span>
+               <span class="checkout-total-price" id="checkout-total-price">0.00 €</span>
+            </div>
+
+            <button type="submit" class="hero-cta" style="width:100%; margin-top:16px;">
+               Place Order
+            </button>
+         </form>
+      </div>
+
+   </div>
+   <!-- Modals end -->
+
+      <header id="site-header">
+         <div class="header-glow-line"></div>
+         <div id="title">
+            <a href="index.html">
+                <img src="../assets/nightwolf_logo2.svg" alt="Night Wolf logo" id="logo" />
+            </a>
+         </div>
+         <nav id="main-nav" aria-label="Main navigation">
+            <a href="../user_html/index.html#week-menu" class="nav-link">Menu</a>
+            <a href="../user_html/order.html" class="nav-link">Order</a>
+            <a href="../user_html/about.html" class="nav-link">About</a>
+         </nav>
+         <!-- Action buttons -->
+         <div id="header_buttons">
+
+            <!-- Language selector -->
+            <button class="header_btn" id="lang_select_button" aria-label="Select language" title="Language">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+               </svg>
+            </button>
+
+            <!-- Login (visible when logged out) -->
+            <button class="header_btn" id="login_button" aria-label="Log in" title="Login">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                  <polyline points="10 17 15 12 10 7"/>
+                  <line x1="15" y1="12" x2="3" y2="12"/>
+               </svg>
+            </button>
+
+            <!-- Profile (visible when logged in — add/remove .hidden class via JS) -->
+            <button class="header_btn hidden" id="profile_button" aria-label="Profile" title="Profile">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+               </svg>
+            </button>
+
+            <!-- Cart button with badge -->
+            <button class="header_btn cart-btn" id="shopping_list" aria-label="Shopping cart" title="Cart">
+               <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+               </svg>
+               <span class="cart-badge" id="cart-count">0</span>
+            </button>
+
+         </div>
+      </header>
+
+      <main class="order-page">
+         <!-- Day navigator -->
+         <section class="order-nav-section">
+            <div class="order-day-nav">
+               <button id="prev-day" class="order-arrow-btn" aria-label="Previous day">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+               </button>
+
+               <div class="order-day-info">
+                  <p class="order-day-eyebrow">Daily Menu</p>
+                  <h1 id="display-day-name" class="order-day-name">MONDAY</h1>
+                  <p id="display-date" class="order-day-date">7 Apr 2026</p>
+                  <span id="order-today-pill" class="order-today-pill hidden">Today</span>
+               </div>
+
+               <button id="next-day" class="order-arrow-btn" aria-label="Next day">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+               </button>
+            </div>
+         </section>
+
+         <!-- Menu list -->
+         <section class="menu-container">
+            <div id="order-menu-list" class="menu-grid">
+               <!-- Filled by order.js -->
+            </div>
+         </section>
+
+         <!-- Sticky order summary bar -->
+         <div class="order-summary-bar" id="order-summary-bar">
+            <div class="osb-inner">
+               <div class="osb-left">
+                  <span class="osb-count" id="osb-item-count">0 items</span>
+                  <span class="osb-sep">·</span>
+                  <span class="osb-total" id="osb-total">0.00 €</span>
+               </div>
+               <button class="osb-checkout-btn" id="osb-checkout-btn" disabled>
+                  Proceed to checkout
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+               </button>
+            </div>
+         </div>
+      </main>
+
+      <div id="modal-overlay" class="modal-overlay hidden">
+          </div>
+   </body>
+</html>

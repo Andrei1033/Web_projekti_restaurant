@@ -10,13 +10,151 @@
 
       <!-- Own CSS -->
       <link rel="stylesheet" href="../css/user_css/user_main.css" />
+      <link rel="stylesheet" href="../css/user_css/modals.css" />
 
       <!-- Own JavaScript -->
       <script src="../js/user_js/design.js" defer></script>
+      <script src="../js/user_js/week_menue.js" defer></script>
+      <script src="../js/user_js/modals.js" defer></script>
 
       <title>Night Wolf restaurant</title>
    </head>
    <body>
+
+
+      <!-- Modals start-->
+      <div id="modal-overlay" class="modal-overlay hidden">
+
+         <!-- Login Modal -->
+         <div id="login-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">LOG <span class="red">IN</span></h2>
+            <form class="modal-form">
+               <div class="input-group">
+                  <label>Email</label>
+                  <input type="email" placeholder="wolf@night.fi" required>
+               </div>
+               <div class="input-group">
+                  <label>Password</label>
+                  <input type="password" placeholder="••••••••" required>
+               </div>
+               <button type="submit" class="hero-cta" style="width:100%; margin-top:20px;">Enter the Den</button>
+            </form>
+            <p class="modal-footer-text">New hunter? <a id="register_button" href="#" class="red">Register here</a></p>
+         </div>
+
+         <!-- Register Modal -->
+         <div id="register-modal" class="modal-content hidden">
+            <button class="close-modal" aria-label="Close">&times;</button>
+            <h2 class="modal-title">JOIN THE <span class="red">PACK</span></h2>
+
+            <form class="modal-form">
+               <div class="input-row">
+                  <div class="input-group">
+                     <label>Username</label>
+                     <input type="text" placeholder="NightHunter" required>
+                  </div>
+               </div>
+
+               <div class="input-group">
+                  <label>Email Address</label>
+                  <input type="email" placeholder="wolf@night.fi" required>
+               </div>
+
+               <div class="input-row-grid">
+                  <div class="input-group">
+                     <label>Password</label>
+                     <input type="password" placeholder="••••••••" required>
+                  </div>
+                  <div class="input-group">
+                     <label>Confirm Password</label>
+                     <input type="password" placeholder="••••••••" required>
+                  </div>
+               </div>
+
+               <div class="terms-checkbox">
+                  <input type="checkbox" id="terms" required>
+                  <label for="terms">I accept the <a href="#" class="red">Terms of the Hunt</a></label>
+               </div>
+
+               <button type="submit" class="hero-cta" style="width:100%; margin-top:10px;">Create Account</button>
+            </form>
+
+            <p class="modal-footer-text">Already a member? <a href="#" id="to-login" class="red">Log in here</a></p>
+         </div>
+
+         <!-- Cart Modal -->
+         <div id="cart-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">YOUR <span class="red">CART</span></h2>
+            <div id="cart-items-container">
+               <p class="empty-msg">Your cart is currently empty.</p>
+               </div>
+            <div class="cart-total-section">
+               <div class="total-row"><span>Total:</span><span id="cart-total-price">0.00€</span></div>
+               <button class="hero-cta" style="width:100%; margin-top:20px;">Proceed to Checkout</button>
+            </div>
+         </div>
+
+         <!-- Profile Modal -->
+         <div id="profile-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">MY <span class="red">PROFILE</span></h2>
+
+            <form id="profile-form" class="modal-form profile-form">
+               <div class="avatar-row">
+                  <div class="avatar-wrapper">
+                     <img src="../assets/default-avatar.png" alt="Avatar" id="avatar-preview" class="avatar-preview" />
+                     <div id="avatar-placeholder" class="avatar-placeholder">🐺</div>
+                  </div>
+                  <div class="avatar-controls">
+                     <input type="file" id="avatar-input" accept="image/*" class="hidden" />
+                     <button type="button" id="avatar-upload-btn" class="hero-cta">Upload Image</button>
+                     <p class="help-text">No image? A placeholder will be used.</p>
+                  </div>
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-name">Name</label>
+                  <input id="profile-name" name="name" type="text" placeholder="Your name" />
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-email">Email</label>
+                  <input id="profile-email" name="email" type="email" placeholder="you@example.com" />
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-password">Password</label>
+                  <input id="profile-password" name="password" type="password" placeholder="••••••••" />
+               </div>
+
+               <div class="input-group">
+                  <label for="profile-phone">Phone</label>
+                  <input id="profile-phone" name="phone" type="tel" placeholder="e.g. +358 40 1234567" />
+               </div>
+
+               <div class="profile-actions">
+                  <button type="submit" class="hero-cta" style="width:48%;">Save</button>
+                  <button type="button" id="profile-logout" class="hero-cta" style="width:48%;">Logout</button>
+               </div>
+            </form>
+
+         </div>
+
+         <!-- Language Modal -->
+         <div id="lang-modal" class="modal-content hidden">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">SELECT <span class="red">LANGUAGE</span></h2>
+            <div class="lang-options">
+               <button class="lang-opt-btn active" data-lang="en">English (UK)</button>
+               <button class="lang-opt-btn" data-lang="fi">Suomi (FI)</button>
+            </div>
+         </div>
+
+      </div>
+      <!-- Modals end -->
+
 
       <!-- Header start -->
       <header id="site-header">
@@ -42,9 +180,9 @@
 
          <!-- Nav links (desktop) -->
          <nav id="main-nav" aria-label="Main navigation">
-         <a href="#" class="nav-link">Menu</a>
-         <a href="#" class="nav-link">Order</a>
-         <a href="#" class="nav-link">About</a>
+         <a href="#week-menu" class="nav-link">Menu</a>
+         <a href="../user_html/order.html" class="nav-link">Order</a>
+         <a href="../user_html/about.html" class="nav-link">About</a>
          </nav>
 
          <!-- Action buttons -->
@@ -68,7 +206,7 @@
          </button>
 
          <!-- Profile (visible when logged in — add/remove .hidden class via JS) -->
-         <button class="header_btn hidden" id="profile_button" aria-label="Profile" title="Profile">
+         <button class="header_btn " id="profile_button" aria-label="Profile" title="Profile">
             <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                <circle cx="12" cy="7" r="4"/>
@@ -105,13 +243,15 @@
          <p class="hero-eyebrow">Helsinki · Daily Rotating Menu</p>
          <h1 class="hero-title">NIGHT<span class="red">WOLF</span></h1>
          <p class="hero-sub">Premium Dining</p>
-         <a href="#" class="hero-cta">View Today's Menu</a>
+         <a href="#wm-card is-today" class="hero-cta">View Today's Menu</a>
          </div>
          <div class="hero-scroll-hint" aria-hidden="true">
          <span></span>
          </div>
       </section>
 
+      <!-- ── ABOUT SECTION ── -->
+      <a href="../user_html/about.html" style="text-decoration:none; color:inherit;">
       <section class="about" id="about">
          <div class="about-item">
             <div class="about-icon">
@@ -141,6 +281,35 @@
             </div>
          </div>
       </section>
+      </a>
+      <!-- ── WEEKLY MENU SECTION ── -->
+      <section class="week-menu" id="week-menu">
 
+         <!-- Section WEEKLY MENU header -->
+         <div class="wm-header">
+            <p class="wm-eyebrow">This week's program</p>
+            <h2 class="wm-title">WEEKLY <span class="red">MENU</span></h2>
+         </div>
+
+         <!-- Week navigator -->
+         <div class="wm-nav">
+            <button class="wm-nav-btn" id="wm-prev" aria-label="Previous week">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="wm-week-label" id="wm-week-label">
+               <span id="wm-week-text"></span>
+               <span class="wm-current-badge" id="wm-current-badge">Current week</span>
+            </div>
+            <button class="wm-nav-btn" id="wm-next" aria-label="Next week">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+         </div>
+
+         <!-- Day cards grid -->
+         <div class="wm-grid" id="wm-grid">
+            <!-- Filled by JavaScript -->
+         </div>
+
+      </section>
    </body>
 </html>
