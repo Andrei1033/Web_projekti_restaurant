@@ -1,43 +1,19 @@
-<<<<<<< HEAD
-// ===== MODAL =====
-=======
 /* eslint-disable no-unused-vars */
 // Open modal
->>>>>>> fe6a540297f4a6b044bca8ae2cc08e1cb5ae0ab7
 function openModal(id) {
    document.getElementById(id).style.display = 'flex';
 }
 
-<<<<<<< HEAD
-=======
 // Close modal
->>>>>>> fe6a540297f4a6b044bca8ae2cc08e1cb5ae0ab7
 function closeModal(id) {
    document.getElementById(id).style.display = 'none';
 }
 
-<<<<<<< HEAD
-window.addEventListener('click', function (e) {
-=======
 // Close when clicking the overlay/background
 window.onclick = function (e) {
->>>>>>> fe6a540297f4a6b044bca8ae2cc08e1cb5ae0ab7
    document.querySelectorAll('.modal').forEach((modal) => {
       if (e.target === modal) modal.style.display = 'none';
    });
-<<<<<<< HEAD
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-   document.querySelectorAll('.modal-content').forEach((content) => {
-      content.addEventListener('click', (e) => e.stopPropagation());
-   });
-
-   loadOrders();
-});
-
-// ===== LISÄÄ TUOTERIVI =====
-=======
 };
 
 // Load modals.html automatically
@@ -50,7 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // add new product row
->>>>>>> fe6a540297f4a6b044bca8ae2cc08e1cb5ae0ab7
 document.addEventListener('click', function (e) {
    if (e.target.matches('.add-item')) {
       const row = document.createElement('div');
