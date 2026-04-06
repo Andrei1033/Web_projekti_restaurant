@@ -177,3 +177,110 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Checkout modal specific styles + scroll behavior + minimalist scrollbar ── */
+/* Allow overlay to scroll if modal is taller than viewport */
+.modal-overlay {
+   padding: 28px 18px;
+   overflow-y: auto; /* allow page-level scrolling for very tall modals */
+   -webkit-overflow-scrolling: touch;
+}
+
+.modal-content {
+   max-height: calc(100vh - 80px); /* keep modal within viewport */
+   overflow-y: auto; /* internal scrolling for modal content */
+   padding: 32px; /* ensure comfortable padding when scrolled */
+}
+
+/* Checkout summary area inside modal (scroll if long) */
+.checkout-summary {
+   max-height: 240px;
+   overflow-y: auto;
+   padding-right: 8px;
+   color: var(--silver);
+   font-size: 14px;
+}
+
+.checkout-divider {
+   height: 1px;
+   background: rgba(255,255,255,0.04);
+   margin: 14px 0;
+}
+
+.checkout-form-label {
+   font-weight: 600;
+   margin-bottom: 8px;
+   color: var(--silver);
+}
+
+.checkout-upsell {
+   display: flex;
+   gap: 12px;
+   align-items: center;
+   padding: 10px;
+   background: rgba(255,255,255,0.02);
+   border-radius: 8px;
+   border: 1px solid var(--glass-border);
+   margin: 10px 0;
+}
+.upsell-btn {
+   margin-left: auto;
+   text-decoration: none;
+   color: var(--red);
+   font-weight: 600;
+}
+
+.checkout-total-row {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   font-weight: 600;
+   margin-top: 10px;
+   font-size: 16px;
+}
+
+/* Minimalist scrollbar: WebKit */
+.modal-content::-webkit-scrollbar,
+.checkout-summary::-webkit-scrollbar,
+.modal-overlay::-webkit-scrollbar {
+   width: 8px;
+   height: 8px;
+}
+.modal-content::-webkit-scrollbar-track,
+.checkout-summary::-webkit-scrollbar-track,
+.modal-overlay::-webkit-scrollbar-track {
+   background: transparent;
+}
+.modal-content::-webkit-scrollbar-thumb,
+.checkout-summary::-webkit-scrollbar-thumb,
+.modal-overlay::-webkit-scrollbar-thumb {
+   background: rgba(255,255,255,0.07);
+   border-radius: 8px;
+   border: 2px solid transparent; /* keep slim appearance */
+   background-clip: padding-box;
+}
+.modal-content::-webkit-scrollbar-thumb:hover,
+.checkout-summary::-webkit-scrollbar-thumb:hover,
+.modal-overlay::-webkit-scrollbar-thumb:hover {
+   background: rgba(255,255,255,0.11);
+}
+
+/* Minimalist scrollbar: Firefox */
+.modal-content,
+.checkout-summary,
+.modal-overlay {
+   scrollbar-width: thin;
+   scrollbar-color: rgba(255,255,255,0.07) transparent;
+}
+
+/* Small tweaks to ensure input-row-grid remains usable when modal narrows */
+.modal-content .input-row-grid {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: 12px;
+}
+
+@media (max-width: 480px) {
+   .modal-content { padding: 20px; }
+   .modal-content .input-row-grid { grid-template-columns: 1fr; }
+}
