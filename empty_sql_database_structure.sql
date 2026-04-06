@@ -7,7 +7,7 @@ CREATE TABLE `USERS` (
   `username` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) UNIQUE,
   `phone` varchar(255) UNIQUE,
-  `password` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(255),
   `role` VARCHAR(50) DEFAULT 'user'
 );
 
