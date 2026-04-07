@@ -273,3 +273,19 @@ textarea {
       text-align: left;
    }
 }
+
+/* ACTIONS */
+.notice-actions {
+   display: flex;
+   gap: 10px;
+}
+
+.icon-btn {
+   background: transparent;
+   font-size: 18px;
+   color: #475569;
+}
+
+.icon-btn.red {
+   color: #dc2626;
+}
