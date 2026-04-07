@@ -5,7 +5,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>NightWolf Admin - Tiedotteet</title>
       <script src="../js/admin.js" defer></script>
-      <link rel="stylesheet" href="../css//admin_css/style.css" />
+      <link rel="stylesheet" href="../css//admin_css/tiedotteet.css" />
    </head>
    <body>
       <header class="topbar">
@@ -31,13 +31,11 @@
 
       <main class="container">
          <section class="page-head">
-         <div>
-            <h2>Tiedotteiden hallinta</h2>
-            <p>Julkaise ja hallinnoi asiakastiedotteita</p>
-         </div>
-         <button class="primary-btn" onclick="openModal('noticeModal')">
-          + Lisää uusi tiedote
-         </button>
+            <div>
+               <h2>Tiedotteiden hallinta</h2>
+               <p>Julkaise ja hallinnoi asiakastiedotteita</p>
+            </div>
+            <button class="primary-btn" onclick="openModal('noticeModal')">+ Lisää uusi tiedote</button>
          </section>
 
          <section class="stats" style="grid-template-columns: repeat(3, 1fr)">
@@ -106,7 +104,7 @@
             <div class="notice-top">
                <div>
                   <h3>Uusi vegaaninen vaihtoehto</h3>
-                  <small>Tiedote</small><section class="page-head">
+                  <small>Tiedote</small>
                </div>
                <div class="notice-actions">
                   <button class="icon-btn">✕</button>
@@ -118,7 +116,6 @@
             <div class="notice-meta">
                <span>📅 Luotu: 25. maaliskuuta 2026 klo 09.00</span>
             </div>
-
          </section>
 
          <div id="noticeModal" class="modal">
