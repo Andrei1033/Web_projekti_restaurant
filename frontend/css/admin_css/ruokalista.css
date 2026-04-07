@@ -106,7 +106,7 @@ button {
    font-weight: bold;
 }
 
-/* FILTER */
+/* FILTER
 .filter-card {
    background: var(--surface);
    padding: 16px;
@@ -136,7 +136,7 @@ button {
 .chip.active {
    background: #111827;
    color: #fff;
-}
+}*/
 
 /* MENU CARD */
 .card {
