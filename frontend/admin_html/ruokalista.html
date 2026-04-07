@@ -4,7 +4,7 @@
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>NightWolf Admin - Ruokalista</title>
-      <script src="../js/admin.js" defer></script>
+      <script src="../js/admin_js/ruokalista.js" defer></script>
       <link rel="stylesheet" href="../css/admin_css/ruokalista.css" />
    </head>
    <body>
@@ -30,6 +30,7 @@
       </nav>
 
       <main class="container">
+         ...
          <section class="page-head">
             <div>
                <h2>Ruokalistan hallinta</h2>
@@ -38,7 +39,7 @@
             <button class="primary-btn" onclick="openModal('foodModal')">+ Lisää uusi ruokalaji</button>
          </section>
 
-         <section class="filter-card">
+         <div class="menu-container">
             <div class="filter-title">Suodata päivämäärän mukaan</div>
             <div class="chips">
                <span class="chip active">Kaikki päivät</span>
@@ -47,9 +48,9 @@
                <span class="chip">keskiviikkona 8. huhtikuuta 2026</span>
                <span class="chip">torstaina 9. huhtikuuta 2026</span>
             </div>
-         </section>
-
-         <section class="card menu-card">
+         </div>
+<!--
+         <div class="menu-container">
             <div class="menu-left">
                <h3>Tonkotsu Ramen</h3>
                <div class="meta-row">
@@ -65,7 +66,7 @@
                   <button class="icon-btn">✎</button>
                   <button class="icon-btn red">🗑</button>
                </div>
-            </div>
+            </div>-->
 
             <!-- MODAL: Add menu item -->
             <div id="foodModal" class="modal">
@@ -75,27 +76,27 @@
                   <div class="form-grid">
                      <div>
                         <label>Nimi *</label>
-                        <input type="text" placeholder="Esim. Tonkotsu Ramen" />
+                        <input type="text" name="name" placeholder="Esim. Tonkotsu Ramen" />
                      </div>
 
                      <div>
                         <label>Hinta (€) *</label>
-                        <input type="number" value="0" />
+                        <input type="number" name="price" value="0" />
                      </div>
 
                      <div class="full">
                         <label>Kuvaus *</label>
-                        <textarea placeholder="Kerro ruokalajista..."></textarea>
+                        <textarea name="desc" placeholder="Kerro ruokalajista..."></textarea>
                      </div>
 
                      <div>
                         <label>Päivämäärä *</label>
-                        <input type="date" />
+                        <input type="date" name="date" />
                      </div>
 
                      <div>
                         <label>Teema *</label>
-                        <input type="text" placeholder="Esim. Ramen, Tacos, Sushi..." />
+                        <input type="text" name="theme" placeholder="Esim. Ramen, Tacos, Sushi..." />
                      </div>
 
                      <div class="full">
@@ -109,12 +110,12 @@
                   </div>
 
                   <div class="modal-actions">
-                     <button class="primary-btn">💾 Lisää ruokalaji</button>
+                     <button id="addMenuItem" class="primary-btn">💾 Lisää ruokalaji</button>
                      <button onclick="closeModal('foodModal')">Peruuta</button>
                   </div>
                </div>
             </div>
-         </section>
+         </div>
       </main>
    </body>
 </html>
