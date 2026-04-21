@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use('/uploads', express.static('uploads'));
 
-app.use('/api/v1', api);
+app.use('/api/', api);
 
 app.get('/', (req, res) => {
   res.send('🔥 NightWolf API running on port!');
