@@ -1,7 +1,7 @@
 import db from '../../utils/database.js';
 import bcrypt from 'bcryptjs';
 
-export const createUser = async (user) => {
+const createUser = async (user) => {
   const hashedPassword = await bcrypt.hash(user.password, 12);
 
   const sql = `
@@ -20,8 +20,10 @@ export const createUser = async (user) => {
   return result.insertId;
 };
 
-export const findUserByEmail = async (email) => {
+const findUserByEmail = async (email) => {
   const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
 
   return rows[0];
 };
+
+export {createUser, findUserByEmail};

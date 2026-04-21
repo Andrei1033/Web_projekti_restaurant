@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import {createUser, findUserByEmail} from '../models/userModel.js';
 
-export const register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const existing = await findUserByEmail(req.body.email);
 
@@ -27,7 +27,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const user = await findUserByEmail(req.body.email);
 
@@ -42,7 +42,7 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      {id: user.id, email: user.email, role: user.role},
+      {id: user.user_id, email: user.email, role: user.role},
       process.env.JWT_SECRET,
       {expiresIn: '7d'}
     );
@@ -55,3 +55,5 @@ export const login = async (req, res) => {
     res.status(500).json({error: err.message});
   }
 };
+
+export {register, login};
