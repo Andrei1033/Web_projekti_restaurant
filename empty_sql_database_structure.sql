@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
 --  is_active = FALSE hides a dish from the menu without
 --  deleting it (useful for seasonal dishes).
 --
---  image_url: path stored as "/uploads/menu/filename.jpg"
+--  current_dish_image: path stored as "/uploads/menu/filename.jpg"
 --  The file itself lives in backend/uploads/menu/
 -- ============================================================
 CREATE TABLE IF NOT EXISTS dishes (
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS dishes (
   name VARCHAR(120) NOT NULL,
   description TEXT NULL,
   price DECIMAL(6, 2) NOT NULL,
-  image_url VARCHAR(255) NULL,
+  current_dish_image VARCHAR(255) NULL,
   dietary_tags VARCHAR(100) NULL DEFAULT '',
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
