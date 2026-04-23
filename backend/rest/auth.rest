@@ -1,10 +1,11 @@
 ### REGISTER
+
 POST http://localhost:3000/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "maraim",
-  "email": "maraim@test.com",
+  "username": "zzzz",
+  "email": "zzzz@test.com",
   "password": "123456789"
 }
 
@@ -14,6 +15,24 @@ POST http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "maraim@test.com",
+  "email": "maraimn@test.com",
   "password": "123456789"
 }
+
+
+
+### Post login
+# @name login
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "maraimn@test.com",
+  "password": "123456789"
+}
+
+
+### GET CURRENT USER (AUTH TEST)
+
+GET http://localhost:3000/api/auth/me
+Authorization: Bearer {{login.response.body.token}}
