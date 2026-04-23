@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const pool = require('../../utils/database');
+import fs from 'fs';
+import path from 'path';
+import pool from '../../utils/database.js';
 
 // ═══════════════════════════════════════════════════════════════
 //  SHARED HELPERS
@@ -75,7 +75,7 @@ const getAllDishes = async (req, res) => {
     const onlyActive = req.query.active !== '0'; // default true
 
     const [rows] = await pool.query(
-      `SELECT id, name, description, price, image_url,
+      `SELECT id, name, description, price, current_dish_image,
               dietary_tags, is_active, created_at, updated_at
        FROM   dishes
        ${onlyActive ? 'WHERE is_active = 1' : ''}
@@ -95,7 +95,7 @@ const getAllDishes = async (req, res) => {
 const getDishById = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT id, name, description, price, image_url,
+      `SELECT id, name, description, price, current_dish_image,
               dietary_tags, is_active, created_at, updated_at
        FROM   dishes
        WHERE  id = ?`,
@@ -136,7 +136,7 @@ const createDish = async (req, res) => {
     const img = req.file ? imageUrl(req.file.filename) : null;
 
     const [result] = await pool.query(
-      `INSERT INTO dishes (name, description, price, image_url, dietary_tags, is_active)
+      `INSERT INTO dishes (name, description, price, current_dish_image, dietary_tags, is_active)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [
         name.trim(),
@@ -179,9 +179,9 @@ const updateDish = async (req, res) => {
     const {name, description, price, dietary_tags, is_active} = req.body;
 
     // If a new image was uploaded, delete the old one
-    let img = old.image_url;
+    let img = old.current_dish_image;
     if (req.file) {
-      deleteImageFile(old.image_url);
+      deleteImageFile(old.current_dish_image);
       img = imageUrl(req.file.filename);
     }
 
@@ -190,7 +190,7 @@ const updateDish = async (req, res) => {
        SET    name         = ?,
               description  = ?,
               price        = ?,
-              image_url    = ?,
+              current_dish_image    = ?,
               dietary_tags = ?,
               is_active    = ?
        WHERE  id = ?`,
@@ -245,7 +245,7 @@ const deleteDish = async (req, res) => {
     }
 
     // Delete image file from disk
-    deleteImageFile(existing[0].image_url);
+    deleteImageFile(existing[0].current_dish_image);
 
     await pool.query('DELETE FROM dishes WHERE id = ?', [id]);
 
@@ -254,14 +254,6 @@ const deleteDish = async (req, res) => {
     console.error('deleteDish:', err);
     res.status(500).json({error: 'Server error'});
   }
-};
-
-module.exports = {
-  getAllDishes,
-  getDishById,
-  createDish,
-  updateDish,
-  deleteDish,
 };
 
 /*dailyMenuController part
@@ -306,7 +298,7 @@ const getWeekMenu = async (req, res) => {
          d.name,
          d.description,
          d.price,
-         d.image_url,
+         d.current_dish_image,
          d.dietary_tags,
          dmd.sort_order
        FROM   daily_menus dm
@@ -338,7 +330,7 @@ const getWeekMenu = async (req, res) => {
           name: row.name,
           description: row.description,
           price: parseFloat(row.price),
-          image_url: row.image_url,
+          current_dish_image: row.current_dish_image,
           dietary_tags: row.dietary_tags,
         });
       }
@@ -375,7 +367,7 @@ const getDayMenu = async (req, res) => {
          d.name,
          d.description,
          d.price,
-         d.image_url,
+         d.current_dish_image,
          d.dietary_tags,
          dmd.sort_order
        FROM   daily_menus dm
@@ -398,7 +390,7 @@ const getDayMenu = async (req, res) => {
         name: r.name,
         description: r.description,
         price: parseFloat(r.price),
-        image_url: r.image_url,
+        current_dish_image: r.current_dish_image,
         dietary_tags: r.dietary_tags,
       }));
 
@@ -617,7 +609,7 @@ const uploadImage = (req, res) => {
 // ═══════════════════════════════════════════════════════════════
 //  EXPORTS
 // ═══════════════════════════════════════════════════════════════
-module.exports = {
+export {
   // Dishes
   getAllDishes,
   getDishById,

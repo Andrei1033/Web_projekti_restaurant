@@ -1,0 +1,158 @@
+# NightWolf API — REST Tests
+# VS Code: asenna "REST Client" laajennus (Huachao Mao)
+# Sitten klikkaa "Send Request" jokaisen ###-blokin yläpuolelta
+#
+# Muuta @base vastaamaan porttia jossa serverisi pyörii
+
+@base = http://localhost:3000
+
+# Laita admin JWT tähän kun tiimiläisen auth on valmis
+# Saat tokenin kirjautumalla: POST /api/auth/login
+@token = PASTE_YOUR_JWT_TOKEN_HERE
+
+# ─────────────────────────────────────────────────────────
+# 1. HEALTH CHECK — testaa ensin tämä
+#    Pitäisi palauttaa: { "status": "ok" }
+# ─────────────────────────────────────────────────────────
+
+### Health check
+GET {{base}}/api/health
+
+
+# ─────────────────────────────────────────────────────────
+# 2. DISHES — julkiset reitit (ei vaadi kirjautumista)
+# ─────────────────────────────────────────────────────────
+
+### Hae kaikki aktiiviset annokset
+GET {{base}}/api/dishes
+
+### Hae kaikki annokset mukaan lukien ei-aktiiviset (admin näkymä)
+GET {{base}}/api/dishes?active=0
+
+### Hae yksi annos ID:llä (vaihda 1 oikeaan ID:hen)
+GET {{base}}/api/dishes/1
+
+
+# ─────────────────────────────────────────────────────────
+# 3. MENU — julkiset reitit
+# ─────────────────────────────────────────────────────────
+
+### Hae tämän viikon menu
+GET {{base}}/api/menu/week
+
+### Hae tietyn viikon menu (vaihda viikkonumero)
+GET {{base}}/api/menu/week?week=2026-W17
+
+### Hae tänään menu
+GET {{base}}/api/menu/day?date=2026-04-22
+
+### Hae päivä jolla ei ole menua — pitäisi palauttaa { dishes: [] }
+GET {{base}}/api/menu/day?date=2020-01-01
+
+### Väärä date-formaatti — pitäisi palauttaa 400
+GET {{base}}/api/menu/day?date=huomenna
+
+
+# ─────────────────────────────────────────────────────────
+# 4. ADMIN — luo uusi annos (vaatii JWT tokenin)
+#    Muuta @token ylhäällä ennen kuin ajat nämä
+# ─────────────────────────────────────────────────────────
+
+### Luo uusi annos (ilman kuvaa)
+POST {{base}}/api/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Testiramen",
+  "description": "Testi kuvaus tässä",
+  "price": 14.50,
+  "dietary_tags": "lactosefree",
+  "is_active": 1
+}
+
+### Päivitä annos (vaihda 1 oikeaan ID:hen)
+PUT {{base}}/api/dishes/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "price": 15.90,
+  "description": "Päivitetty kuvaus"
+}
+
+### Poista annos (vaihda 1 oikeaan ID:hen)
+DELETE {{base}}/api/dishes/1
+Authorization: Bearer {{token}}
+
+
+# ─────────────────────────────────────────────────────────
+# 5. ADMIN — luo päiväteema
+# ─────────────────────────────────────────────────────────
+
+### Luo uusi päivä (ilman kuvaa)
+POST {{base}}/api/menu/days
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "date": "2026-05-05",
+  "day_name": "Monday",
+  "theme_title": "Ramen Night"
+}
+
+### Yritä luoda sama päivä uudelleen — pitäisi palauttaa 409
+POST {{base}}/api/menu/days
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "date": "2026-05-05",
+  "day_name": "Monday",
+  "theme_title": "Duplikaatti testi"
+}
+
+### Lisää annos päivään
+# Vaihda daily_menu_id ja dish_id oikeisiin
+POST {{base}}/api/menu/days/1/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dish_id": 1,
+  "sort_order": 1
+}
+
+### Poista annos päivältä
+DELETE {{base}}/api/menu/days/1/dishes/1
+Authorization: Bearer {{token}}
+
+### Poista päivä kokonaan
+DELETE {{base}}/api/menu/days/6
+Authorization: Bearer {{token}}
+
+
+# ─────────────────────────────────────────────────────────
+# 6. VIRHETAPAUKSET — testaa että saat oikeat statuskoodit
+# ─────────────────────────────────────────────────────────
+
+### Ilman tokenia — pitäisi palauttaa 401
+POST {{base}}/api/dishes
+Content-Type: application/json
+
+{
+  "name": "Luvaton annos",
+  "price": 10.00
+}
+
+### Puuttuva pakollinen kenttä — pitäisi palauttaa 400
+POST {{base}}/api/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Annos ilman hintaa"
+}
+
+### Olematon ID — pitäisi palauttaa 404
+GET {{base}}/api/dishes/99999
