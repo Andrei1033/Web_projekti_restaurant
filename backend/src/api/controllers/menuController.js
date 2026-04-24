@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import pool from '../../utils/database.js';
+import {fileURLToPath} from 'url';
+import {dirname} from 'path';
+//import {startOfWeek} from 'date-fns';
 
 // ═══════════════════════════════════════════════════════════════
 //  SHARED HELPERS
@@ -10,7 +13,10 @@ import pool from '../../utils/database.js';
  * @param {string|null} filename  e.g. "1712345678_burger.jpg"
  * @returns {string|null}         e.g. "/uploads/menu/1712345678_burger.jpg"
  */
-const imageUrl = (filename) => (filename ? `/uploads/menu/${filename}` : null);
+const imageUrl = (filename) =>
+  filename ? `../../uploads/menu/${filename}` : null;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Deletes an image file from disk.
@@ -37,8 +43,13 @@ const deleteImageFile = (url) => {
  */
 const toDateStr = (date) => {
   if (!date) return null;
-  if (date instanceof Date) return date.toISOString().slice(0, 10);
-  return date.toString().slice(0, 10);
+  try {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toISOString().slice(0, 10);
+  } catch (e) {
+    console.error('toDateStr error:', e, 'input was:', date);
+    return date.toString().slice(0, 10);
+  }
 };
 
 /**
@@ -46,17 +57,27 @@ const toDateStr = (date) => {
  * @param {string} weekStr
  * @returns {Date}
  */
-const mondayOfISOWeek = (weekStr) => {
-  const [yearStr, wStr] = weekStr.split('-W');
-  const year = parseInt(yearStr, 10);
-  const weekNum = parseInt(wStr, 10);
-  const jan4 = new Date(year, 0, 4);
-  const monday = new Date(jan4);
-  monday.setDate(
-    jan4.getDate() - ((jan4.getDay() + 6) % 7) + (weekNum - 1) * 7
-  );
+function mondayOfISOWeek(weekString) {
+  const [year, week] = weekString.split('-W');
+  const yearNum = parseInt(year, 10);
+  const weekNum = parseInt(week, 10);
+
+  // Use UTC-based calculation to avoid local timezone shifts.
+  // Start from Jan 4th (always in week 1) in UTC.
+  const jan4Utc = new Date(Date.UTC(yearNum, 0, 4));
+  const jan4Day = jan4Utc.getUTCDay() || 7; // 1..7 (Mon..Sun)
+
+  // Compute Monday of week 1 in UTC
+  const mondayOfWeek1 = new Date(jan4Utc);
+  mondayOfWeek1.setUTCDate(jan4Utc.getUTCDate() - (jan4Day - 1));
+
+  // Add (weekNum - 1) weeks to get the Monday of requested week
+  const monday = new Date(mondayOfWeek1);
+  monday.setUTCDate(mondayOfWeek1.getUTCDate() + (weekNum - 1) * 7);
+  monday.setUTCHours(0, 0, 0, 0);
+
   return monday;
-};
+}
 
 /*dishController part
  * Endpoints handled:
@@ -284,8 +305,30 @@ const getWeekMenu = async (req, res) => {
       monday.setDate(now.getDate() - day + 1);
     }
 
+    // Create array of all week days (Monday to Sunday)
+    const weekdays = [];
+    const dayNames = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(monday);
+      currentDate.setDate(monday.getDate() + i);
+      weekdays.push({
+        date: toDateStr(currentDate),
+        day_name: dayNames[i],
+        fullDate: currentDate,
+      });
+    }
+
     const mondayStr = toDateStr(monday);
-    const fridayStr = toDateStr(new Date(monday.getTime() + 4 * 86400000));
+    const sundayStr = toDateStr(new Date(monday.getTime() + 6 * 86400000));
 
     const [rows] = await pool.query(
       `SELECT
@@ -303,19 +346,19 @@ const getWeekMenu = async (req, res) => {
          dmd.sort_order
        FROM   daily_menus dm
        LEFT JOIN daily_menu_dishes dmd ON dmd.daily_menu_id = dm.id
-       LEFT JOIN dishes d              ON d.id = dmd.dish_id AND d.is_active = 1
+       LEFT JOIN dishes d              ON d.id = dmd.dish_id
        WHERE  dm.date BETWEEN ? AND ?
        ORDER  BY dm.date ASC, dmd.sort_order ASC`,
-      [mondayStr, fridayStr]
+      [mondayStr, sundayStr]
     );
 
     // Group rows into { "YYYY-MM-DD": { ...dayInfo, dishes: [...] } }
-    const result = {};
+    const menuMap = {};
     for (const row of rows) {
       const key = toDateStr(row.date);
 
-      if (!result[key]) {
-        result[key] = {
+      if (!menuMap[key]) {
+        menuMap[key] = {
           date: key,
           day_name: row.day_name,
           theme_title: row.theme_title,
@@ -325,7 +368,7 @@ const getWeekMenu = async (req, res) => {
       }
 
       if (row.dish_id) {
-        result[key].dishes.push({
+        menuMap[key].dishes.push({
           id: row.dish_id,
           name: row.name,
           description: row.description,
@@ -333,6 +376,26 @@ const getWeekMenu = async (req, res) => {
           current_dish_image: row.current_dish_image,
           dietary_tags: row.dietary_tags,
         });
+      }
+    }
+
+    // Build result with all weekdays (Monday to Friday)
+    const result = {};
+    for (const weekday of weekdays) {
+      const dateKey = weekday.date;
+
+      if (menuMap[dateKey]) {
+        // Day exists in database - use its data
+        result[dateKey] = menuMap[dateKey];
+      } else {
+        // Day doesn't exist in database - return default structure with empty dishes
+        result[dateKey] = {
+          date: dateKey,
+          day_name: weekday.day_name,
+          theme_title: null,
+          theme_image: null,
+          dishes: [],
+        };
       }
     }
 
@@ -372,14 +435,32 @@ const getDayMenu = async (req, res) => {
          dmd.sort_order
        FROM   daily_menus dm
        LEFT JOIN daily_menu_dishes dmd ON dmd.daily_menu_id = dm.id
-       LEFT JOIN dishes d              ON d.id = dmd.dish_id AND d.is_active = 1
+       LEFT JOIN dishes d              ON d.id = dmd.dish_id
        WHERE  dm.date = ?
        ORDER  BY dmd.sort_order ASC`,
       [date]
     );
 
     if (rows.length === 0) {
-      return res.json({date, dishes: []});
+      // Date doesn't exist in daily_menus at all
+      const dayNames = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ];
+      const dayOfWeek = new Date(date).getDay();
+
+      return res.json({
+        date: date,
+        day_name: dayNames[dayOfWeek],
+        theme_title: null,
+        theme_image: null,
+        dishes: [],
+      });
     }
 
     const first = rows[0];

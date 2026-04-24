@@ -16,236 +16,258 @@
  *   const weekData = await fetch(`/api/menu?week=${weekKey}`).then(r => r.json());
  */
 
-'use strict';
+"use strict";
 
 /* ── Config ────────────────────────────────────────────────── */
-const ORDER_PAGE_URL = 'order.html';
-
-/* ── Placeholder menu data ──────────────────────────────────
- *  Keys are hardcoded ISO week strings — no getter tricks.
- *  img paths point to your assets folder.
- * ─────────────────────────────────────────────────────────── */
-const MENU_DATA = {
-  '2026-W14': {
-    mon: {
-      theme: 'Ramen Night',
-      desc: 'Rich tonkotsu broth, chashu pork, soft egg & nori.',
-      img: '../assets/menu/ramen.jpg'
-    },
-    tue: {
-      theme: 'Taco Tuesday',
-      desc: 'Smoked beef, jalapeño salsa & lime crema.',
-      img: '../assets/menu/tacos.jpg'
-    },
-    wed: {
-      theme: 'Smash Burger',
-      desc: 'Double smash patty, aged cheddar & secret wolf sauce.',
-      img: '../assets/menu/burger.jpg'
-    },
-    thu: {
-      theme: 'Pizza Romana',
-      desc: 'Thin-crust, San Marzano tomato, fior di latte.',
-      img: '../assets/menu/pizza.jpg'
-    },
-    fri: {
-      theme: 'Sushi Friday',
-      desc: 'Omakase-style nigiri & premium maki rolls.',
-      img: '../assets/menu/sushi.jpg'
-    },
-    sat: {
-      theme: 'Weekend Brunch',
-      desc: 'Avocado toast, shakshuka & bottomless mimosas.',
-      img: '../assets/menu/brunch.jpg'
-    },
-    sun: {
-      theme: 'Sunday Roast',
-      desc: 'Herb-crusted beef, roasted veg & Yorkshire pudding.',
-      img: '../assets/menu/roast.jpg'
-    }
-  },
-  '2026-W15': {
-    mon: {
-      theme: 'Pho Bo',
-      desc: 'Vietnamese beef broth, rice noodles & fresh herbs.',
-      img: '../assets/menu/pho.jpg'
-    },
-    tue: {
-      theme: 'Birria Tacos',
-      desc: 'Braised beef birria with consommé for dipping.',
-      img: '../assets/menu/birria.jpg'
-    },
-    // Wednesday intentionally missing → shows "No menu yet"
-    thu: {
-      theme: 'Neapolitan Pizza',
-      desc: 'Wood-fired, 00 flour dough, buffalo mozzarella.',
-      img: '../assets/menu/pizza.jpg'
-    },
-    fri: {
-      theme: 'Omakase',
-      desc: "Chef's selection of the finest seasonal fish.",
-      img: '../assets/menu/sushi.jpg'
-    }
-  }
-};
+const ORDER_PAGE_URL = "order.html";
+const API_BASE = "http://localhost:3000/api";
 
 /* ── ISO week helpers ───────────────────────────────────────── */
 
-/**
- * Returns "YYYY-Www" for any given Date.
- * Uses UTC internally to avoid DST edge cases.
- * @param {Date} date
- * @returns {string}
- */
 function isoWeekKey(date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  // Move to Thursday of the week (ISO: week year = Thursday's year)
+  const d = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+  );
   d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNum   = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
-  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+  const weekNum = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNum).padStart(2, "0")}`;
 }
 
-/**
- * Returns the Monday (local time) for a "YYYY-Www" key.
- * @param {string} weekKey
- * @returns {Date}
- */
 function mondayOfWeek(weekKey) {
-  const [yearStr, wStr] = weekKey.split('-W');
-  const year    = parseInt(yearStr, 10);
+  const [yearStr, wStr] = weekKey.split("-W");
+  const year = parseInt(yearStr, 10);
   const weekNum = parseInt(wStr, 10);
-  // Jan 4 is always in ISO week 1
   const jan4 = new Date(year, 0, 4);
-  const mon  = new Date(jan4);
+  const mon = new Date(jan4);
   mon.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (weekNum - 1) * 7);
   return mon;
 }
 
-/** Date → "12 Apr" */
 function fmtDate(date) {
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-/** Week key → "7 Apr – 11 Apr 2026" */
 function fmtWeekRange(weekKey) {
-  const mon  = mondayOfWeek(weekKey);
-  const fri  = new Date(mon);
-  fri.setDate(mon.getDate() + 4);
-  const s = { day: 'numeric', month: 'short' };
-  return `${mon.toLocaleDateString('en-GB', s)} – ${fri.toLocaleDateString('en-GB', { ...s, year: 'numeric' })}`;
+  const mon = mondayOfWeek(weekKey);
+  const sun = new Date(mon);
+  sun.setDate(mon.getDate() + 6); // Sunday is 6 days after Monday
+
+  const options = { day: "numeric", month: "short" };
+  const yearOptions = { ...options, year: "numeric" };
+
+  // If same month and year
+  if (
+    mon.getMonth() === sun.getMonth() &&
+    mon.getFullYear() === sun.getFullYear()
+  ) {
+    return `${mon.toLocaleDateString("en-GB", options)} – ${sun.toLocaleDateString("en-GB", yearOptions)}`;
+  }
+  // Different months or years
+  return `${mon.toLocaleDateString("en-GB", options)} – ${sun.toLocaleDateString("en-GB", yearOptions)}`;
 }
 
 /* ── Constants ──────────────────────────────────────────────── */
-const DAY_KEYS   = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-const DAY_NAMES  = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const DAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+const DAY_NAMES = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
-const TODAY          = new Date();
-const TODAY_DAY_KEY  = ['sun','mon','tue','wed','thu','fri','sat'][TODAY.getDay()];
-const TODAY_WEEK     = isoWeekKey(TODAY);
-const TODAY_MIDNIGHT = new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+const TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
+const TODAY_WEEK = isoWeekKey(TODAY);
 
 /* ── State ──────────────────────────────────────────────────── */
-// Tracks which week is currently displayed
 let currentWeekKey = TODAY_WEEK;
 
+/* ── API Functions ──────────────────────────────────────────── */
+
+/**
+ * Fetch menu for a specific week from backend API
+ * @param {string} weekKey - Format: "2026-W17"
+ * @returns {Promise<Object>} - Menu data organized by date
+ */
+async function fetchWeekMenu(weekKey) {
+  try {
+    const response = await fetch(`${API_BASE}/menu/week?week=${weekKey}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching week menu:", error);
+    return {}; // Return empty object on error
+  }
+}
+
+/**
+ * Convert API date format to day key (mon, tue, etc.)
+ * @param {string} dateStr - "2026-04-20"
+ * @returns {string} - "mon", "tue", etc.
+ */
+function dateToDayKey(dateStr) {
+  const date = new Date(dateStr);
+  const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  return days[date.getDay()];
+}
+
+/**
+ * Get image URL (handle relative paths)
+ * @param {string} imagePath - Image path from API
+ * @returns {string} - Full image URL or placeholder
+ */
+function getImageUrl(imagePath) {
+  if (!imagePath) return null;
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith("http")) return imagePath;
+  // If it starts with /uploads, prepend API_BASE
+  if (imagePath.startsWith("/uploads")) return `${API_BASE}${imagePath}`;
+  // Otherwise assume it's in assets folder
+  return `../assets/menu/${imagePath}`;
+}
+
 /* ── Render ─────────────────────────────────────────────────── */
-function renderWeek(weekKey) {
-  const grid     = document.getElementById('wm-grid');
-  const weekText = document.getElementById('wm-week-text');
-  const badge    = document.getElementById('wm-current-badge');
+
+async function renderWeek(weekKey) {
+  const grid = document.getElementById("wm-grid");
+  const weekText = document.getElementById("wm-week-text");
+  const badge = document.getElementById("wm-current-badge");
 
   if (!grid) return;
 
   weekText.textContent = fmtWeekRange(weekKey);
-  badge.classList.toggle('hidden', weekKey !== TODAY_WEEK);
+  badge.classList.toggle("hidden", weekKey !== TODAY_WEEK);
 
-  // Fade out → rebuild → fade in
-  grid.classList.add('fading');
+  // Show loading state
+  grid.classList.add("loading");
+  grid.innerHTML = '<div class="loading-spinner">Loading menu...</div>';
 
-  setTimeout(() => {
-    grid.innerHTML = '';
+  try {
+    // Fetch real data from API
+    const weekData = await fetchWeekMenu(weekKey);
 
-    // ── Swap this one line for fetch('/api/menu?week=...') later ──
-    const weekData = MENU_DATA[weekKey] || {};
-    // ─────────────────────────────────────────────────────────────
+    // Fade out → rebuild → fade in
+    grid.classList.add("fading");
+    grid.classList.remove("loading");
 
-    const monday = mondayOfWeek(weekKey);
+    setTimeout(() => {
+      grid.innerHTML = "";
 
-    DAY_KEYS.forEach((dayKey, i) => {
-      const dayDate = new Date(monday);
-      dayDate.setDate(monday.getDate() + i);
+      const monday = mondayOfWeek(weekKey);
 
-      const isToday   = weekKey === TODAY_WEEK && dayKey === TODAY_DAY_KEY;
-      const isPast    = dayDate < TODAY_MIDNIGHT;
-      const menu      = weekData[dayKey] || null;
-      const isEmpty   = !menu;
-      const clickable = !isEmpty && !isPast;
+      DAY_KEYS.forEach((dayKey, i) => {
+        const dayDate = new Date(monday);
+        dayDate.setDate(monday.getDate() + i);
 
-      // Use <a> for clickable cards so the whole card is a link
-      const card = document.createElement(clickable ? 'a' : 'div');
-      if (clickable) {
-        card.href = `${ORDER_PAGE_URL}?day=${dayKey}&week=${weekKey}`;
-      }
+        // (Now rendering all days Monday–Sunday)
 
-      card.className = [
-        'wm-card',
-        isToday ? 'is-today' : '',
-        isPast  ? 'is-past'  : '',
-        isEmpty ? 'is-empty' : ''
-      ].filter(Boolean).join(' ');
+        const dateStr = dayDate.toISOString().slice(0, 10);
+        const isToday =
+          weekKey === TODAY_WEEK &&
+          dateStr === new Date().toISOString().slice(0, 10);
+        const isPast = dayDate < TODAY;
 
-      card.style.animationDelay = `${i * 55}ms`;
+        // Get menu data from API response
+        const apiDayData = weekData[dateStr] || null;
+        const hasMenu =
+          apiDayData && apiDayData.dishes && apiDayData.dishes.length > 0;
 
-      // Image area — shows placeholder wolf bg if img fails or no menu
-      const imgHTML = `
-        <div class="wm-card-img ${menu ? '' : 'wm-img-missing'}">
-          ${menu
-            ? `<img src="${menu.img}"
+        // Transform API data to format needed for display
+        let menu = null;
+        if (hasMenu && apiDayData.theme_title) {
+          menu = {
+            theme: apiDayData.theme_title,
+            desc: apiDayData.dishes.map((d) => d.name).join(", "), // Show dish names as description
+            img: getImageUrl(apiDayData.theme_image),
+            dishes: apiDayData.dishes,
+          };
+        }
+
+        const isEmpty = !menu;
+        const clickable = !isEmpty && !isPast;
+
+        const card = document.createElement(clickable ? "a" : "div");
+        if (clickable) {
+          // Pass date to order page instead of day+week
+          card.href = `${ORDER_PAGE_URL}?date=${dateStr}`;
+        }
+
+        card.className = [
+          "wm-card",
+          isToday ? "is-today" : "",
+          isPast ? "is-past" : "",
+          isEmpty ? "is-empty" : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        card.style.animationDelay = `${i * 55}ms`;
+
+        // Image area
+        const imgHTML = `
+          <div class="wm-card-img ${menu ? "" : "wm-img-missing"}">
+            ${
+              menu && menu.img
+                ? `<img src="${menu.img}"
                     alt="${menu.theme}"
                     onerror="this.parentElement.classList.add('wm-img-missing'); this.remove();">`
-            : ''}
-          ${isToday ? '<div class="wm-img-today-ribbon">Today</div>' : ''}
-        </div>`;
+                : ""
+            }
+            ${isToday ? '<div class="wm-img-today-ribbon">Today</div>' : ""}
+          </div>`;
 
-      // Card text body
-      const bodyHTML = menu
-        ? `<div class="wm-card-day-row">
-             <span class="wm-card-day">${DAY_NAMES[i].toUpperCase()}</span>
-             <span class="wm-card-date">${fmtDate(dayDate)}</span>
-           </div>
-           <div class="wm-card-theme">${menu.theme}</div>
-           <div class="wm-card-desc">${menu.desc}</div>
-           ${clickable
-             ? `<div class="wm-card-cta">
-                  Order now
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                    <polyline points="12 5 19 12 12 19"/>
-                  </svg>
-                </div>`
-             : ''}`
-        : `<div class="wm-card-day-row">
-             <span class="wm-card-day">${DAY_NAMES[i].toUpperCase()}</span>
-             <span class="wm-card-date">${fmtDate(dayDate)}</span>
-           </div>
-           <div class="wm-card-theme wm-theme-empty">Coming soon</div>
-           <div class="wm-empty-msg">No menu available yet.<br>Check back soon!</div>`;
+        // Card text body
+        const bodyHTML = menu
+          ? `<div class="wm-card-day-row">
+               <span class="wm-card-day">${DAY_NAMES[i].toUpperCase()}</span>
+               <span class="wm-card-date">${fmtDate(dayDate)}</span>
+             </div>
+             <div class="wm-card-theme">${menu.theme}</div>
+             <div class="wm-card-desc">${menu.desc.substring(0, 80)}${menu.desc.length > 80 ? "..." : ""}</div>
+             ${
+               clickable
+                 ? `<div class="wm-card-cta">
+                Order now
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </div>`
+                 : ""
+             }`
+          : `<div class="wm-card-day-row">
+               <span class="wm-card-day">${DAY_NAMES[i].toUpperCase()}</span>
+               <span class="wm-card-date">${fmtDate(dayDate)}</span>
+             </div>
+             <div class="wm-card-theme wm-theme-empty">Coming soon</div>
+             <div class="wm-empty-msg">No menu available yet.<br>Check back soon!</div>`;
 
-      card.innerHTML = `${imgHTML}<div class="wm-card-body">${bodyHTML}</div>`;
-      grid.appendChild(card);
-    });
+        card.innerHTML = `${imgHTML}<div class="wm-card-body">${bodyHTML}</div>`;
+        grid.appendChild(card);
+      });
 
-    grid.classList.remove('fading');
-  }, 200);
+      grid.classList.remove("fading");
+    }, 200);
+  } catch (error) {
+    console.error("Error rendering week:", error);
+    grid.innerHTML =
+      '<div class="error-message">Failed to load menu. Please try again later.</div>';
+    grid.classList.remove("loading", "fading");
+  }
 }
 
 /* ── Navigation ─────────────────────────────────────────────── */
 
-/**
- * Move forward (+1) or backward (-1) by one week.
- * @param {number} direction  +1 or -1
- */
 function changeWeek(direction) {
   const mon = mondayOfWeek(currentWeekKey);
   mon.setDate(mon.getDate() + direction * 7);
@@ -254,13 +276,13 @@ function changeWeek(direction) {
 }
 
 /* ── Init ───────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  const prevBtn = document.getElementById('wm-prev');
-  const nextBtn = document.getElementById('wm-next');
+document.addEventListener("DOMContentLoaded", () => {
+  const prevBtn = document.getElementById("wm-prev");
+  const nextBtn = document.getElementById("wm-next");
   if (!prevBtn || !nextBtn) return;
 
-  prevBtn.addEventListener('click', () => changeWeek(-1));
-  nextBtn.addEventListener('click', () => changeWeek(+1));
+  prevBtn.addEventListener("click", () => changeWeek(-1));
+  nextBtn.addEventListener("click", () => changeWeek(+1));
 
   renderWeek(currentWeekKey);
 });

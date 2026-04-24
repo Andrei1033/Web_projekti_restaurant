@@ -1,0 +1,38 @@
+### Upload kuva
+POST http://localhost:3000/api/uploads/image
+Content-Type: multipart/form-data; boundary=----NWBoundary
+
+------NWBoundary
+Content-Disposition: form-data; name="image"; filename="testi.jpg"
+Content-Type: image/jpeg
+
+< C:/Users/andre/Pictures/testi.jpg
+
+------NWBoundary--
+
+### Tarkista että kuva löytyy selaimesta
+http://localhost:3000/uploads/menu/test.jpg
+
+### Luo annos jossa on kuva
+POST http://localhost:3000/api/dishes
+Content-Type: multipart/form-data; boundary=----NWBoundary
+
+------NWBoundary
+Content-Disposition: form-data; name="name"
+
+Smash Burger
+------NWBoundary
+Content-Disposition: form-data; name="price"
+
+13.90
+------NWBoundary
+Content-Disposition: form-data; name="dietary_tags"
+
+glutenfree
+------NWBoundary
+Content-Disposition: form-data; name="image"; filename="burger.jpg"
+Content-Type: image/jpeg
+
+< C:/Users/andre/Pictures/burger.jpg
+
+------NWBoundary--
