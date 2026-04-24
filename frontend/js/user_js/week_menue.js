@@ -116,7 +116,7 @@ async function fetchWeekMenu(weekKey) {
  */
 function dateToDayKey(dateStr) {
   const date = new Date(dateStr);
-  const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const days = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   return days[date.getDay()];
 }
 
@@ -147,57 +147,45 @@ async function renderWeek(weekKey) {
   weekText.textContent = fmtWeekRange(weekKey);
   badge.classList.toggle("hidden", weekKey !== TODAY_WEEK);
 
-  // Show loading state
   grid.classList.add("loading");
   grid.innerHTML = '<div class="loading-spinner">Loading menu...</div>';
 
   try {
-    // Fetch real data from API
     const weekData = await fetchWeekMenu(weekKey);
 
-    // Fade out → rebuild → fade in
+    // Tärkein korjaus: Järjestä päivämäärät oikein
+    const sortedDates = Object.keys(weekData).sort(); // ["2026-04-20", "2026-04-21", ...]
+
     grid.classList.add("fading");
     grid.classList.remove("loading");
 
     setTimeout(() => {
       grid.innerHTML = "";
 
-      const monday = mondayOfWeek(weekKey);
-
-      DAY_KEYS.forEach((dayKey, i) => {
-        const dayDate = new Date(monday);
-        dayDate.setDate(monday.getDate() + i);
-
-        // (Now rendering all days Monday–Sunday)
-
-        const dateStr = dayDate.toISOString().slice(0, 10);
-        const isToday =
-          weekKey === TODAY_WEEK &&
-          dateStr === new Date().toISOString().slice(0, 10);
+      // Käydään läpi API:n antamat päivämäärät JÄRJESTYKSESSÄ
+      sortedDates.forEach((dateStr, i) => {
+        const dayData = weekData[dateStr];
+        const dayDate = new Date(dateStr);
+        const isToday = dateStr === new Date().toISOString().slice(0, 10);
         const isPast = dayDate < TODAY;
 
-        // Get menu data from API response
-        const apiDayData = weekData[dateStr] || null;
-        const hasMenu =
-          apiDayData && apiDayData.dishes && apiDayData.dishes.length > 0;
+        // Päivän nimi API:sta
+        const dayName =
+          dayData?.day_name ||
+          [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ][dayDate.getDay()];
 
-        // Transform API data to format needed for display
-        let menu = null;
-        if (hasMenu && apiDayData.theme_title) {
-          menu = {
-            theme: apiDayData.theme_title,
-            desc: apiDayData.dishes.map((d) => d.name).join(", "), // Show dish names as description
-            img: getImageUrl(apiDayData.theme_image),
-            dishes: apiDayData.dishes,
-          };
-        }
+        const hasMenu = dayData && dayData.theme_title;
 
-        const isEmpty = !menu;
-        const clickable = !isEmpty && !isPast;
-
-        const card = document.createElement(clickable ? "a" : "div");
-        if (clickable) {
-          // Pass date to order page instead of day+week
+        const card = document.createElement(hasMenu && !isPast ? "a" : "div");
+        if (hasMenu && !isPast) {
           card.href = `${ORDER_PAGE_URL}?date=${dateStr}`;
         }
 
@@ -205,36 +193,30 @@ async function renderWeek(weekKey) {
           "wm-card",
           isToday ? "is-today" : "",
           isPast ? "is-past" : "",
-          isEmpty ? "is-empty" : "",
+          !hasMenu ? "is-empty" : "",
         ]
           .filter(Boolean)
           .join(" ");
 
         card.style.animationDelay = `${i * 55}ms`;
 
-        // Image area
+        // Kuva-alue
         const imgHTML = `
-          <div class="wm-card-img ${menu ? "" : "wm-img-missing"}">
-            ${
-              menu && menu.img
-                ? `<img src="${menu.img}"
-                    alt="${menu.theme}"
-                    onerror="this.parentElement.classList.add('wm-img-missing'); this.remove();">`
-                : ""
-            }
+          <div class="wm-card-img ${hasMenu && dayData.theme_image ? "" : "wm-img-missing"}">
+            ${hasMenu && dayData.theme_image ? `<img src="${getImageUrl(dayData.theme_image)}" alt="${dayData.theme_title}" onerror="this.parentElement.classList.add('wm-img-missing'); this.remove();">` : ""}
             ${isToday ? '<div class="wm-img-today-ribbon">Today</div>' : ""}
           </div>`;
 
-        // Card text body
-        const bodyHTML = menu
+        // Tekstialue
+        const bodyHTML = hasMenu
           ? `<div class="wm-card-day-row">
-               <span class="wm-card-day">${DAY_NAMES[i].toUpperCase()}</span>
+               <span class="wm-card-day">${dayName.toUpperCase()}</span>
                <span class="wm-card-date">${fmtDate(dayDate)}</span>
              </div>
-             <div class="wm-card-theme">${menu.theme}</div>
-             <div class="wm-card-desc">${menu.desc.substring(0, 80)}${menu.desc.length > 80 ? "..." : ""}</div>
+             <div class="wm-card-theme">${dayData.theme_title}</div>
+             <div class="wm-card-desc">${dayData.dishes?.map((d) => d.name).join(", ") || "No dishes added yet"}</div>
              ${
-               clickable
+               hasMenu && !isPast
                  ? `<div class="wm-card-cta">
                 Order now
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -246,7 +228,7 @@ async function renderWeek(weekKey) {
                  : ""
              }`
           : `<div class="wm-card-day-row">
-               <span class="wm-card-day">${DAY_NAMES[i].toUpperCase()}</span>
+               <span class="wm-card-day">${dayName.toUpperCase()}</span>
                <span class="wm-card-date">${fmtDate(dayDate)}</span>
              </div>
              <div class="wm-card-theme wm-theme-empty">Coming soon</div>
