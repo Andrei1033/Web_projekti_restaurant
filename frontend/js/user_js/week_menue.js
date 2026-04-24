@@ -127,12 +127,13 @@ function dateToDayKey(dateStr) {
  */
 function getImageUrl(imagePath) {
   if (!imagePath) return null;
-  // If it's already a full URL, return as is
   if (imagePath.startsWith("http")) return imagePath;
-  // If it starts with /uploads, prepend API_BASE
-  if (imagePath.startsWith("/uploads")) return `${API_BASE}${imagePath}`;
-  // Otherwise assume it's in assets folder
-  return `../assets/menu/${imagePath}`;
+
+  // Poistetaan mahdollinen etutavu ja varmistetaan että polku on oikein
+  const cleanPath = imagePath.replace(/^\/+/, ""); // Poista alusta olevat /
+
+  // Käytetään staattista base URL:ia (ilman /api)
+  return `http://localhost:3000/${cleanPath}`;
 }
 
 /* ── Render ─────────────────────────────────────────────────── */

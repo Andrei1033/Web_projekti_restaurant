@@ -79,8 +79,12 @@ async function fetchDayMenu(date) {
 function getImageUrl(imagePath) {
   if (!imagePath) return null;
   if (imagePath.startsWith("http")) return imagePath;
-  if (imagePath.startsWith("/uploads")) return `${API_BASE}${imagePath}`;
-  return `../assets/menu/${imagePath}`;
+
+  // Poistetaan mahdollinen etutavu ja varmistetaan että polku on oikein
+  const cleanPath = imagePath.replace(/^\/+/, ""); // Poista alusta olevat /
+
+  // Käytetään staattista base URL:ia (ilman /api)
+  return `http://localhost:3000/${cleanPath}`;
 }
 
 /* ── State ── */
