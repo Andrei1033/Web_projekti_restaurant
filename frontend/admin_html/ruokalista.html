@@ -1,120 +1,53 @@
 <!doctype html>
 <html lang="fi">
-   <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>NightWolf Admin - Ruokalista</title>
-      <script src="../js/admin_js/ruokalista.js" defer></script>
-      <link rel="stylesheet" href="../css/admin_css/ruokalista.css" />
-   </head>
-   <body>
-      <header class="topbar">
-         <div class="topbar-inner">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NightWolf Admin - Ruokalista</title>
+    <script src="../js/admin_js/ruokalista.js" defer></script>
+    <link rel="stylesheet" href="../css/admin_css/ruokalista.css" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
             <div class="brand">
-               <h1>NightWolf Admin</h1>
-               <p>Ravintolan hallintapaneeli</p>
+                <h1>NightWolf Admin</h1>
+                <p>Ravintolan hallintapaneeli</p>
             </div>
             <div class="userbox">
-               <span>Kirjautunut ylläpitäjänä</span>
-               <strong>Admin User</strong>
+                <span>Kirjautunut ylläpitäjänä</span>
+                <strong>Admin User</strong>
             </div>
-         </div>
-      </header>
+        </div>
+    </header>
 
-      <nav class="nav">
-         <div class="nav-inner">
+    <nav class="nav">
+        <div class="nav-inner">
             <a href="ruokalista.html" class="active">☰ Ruokalista</a>
             <a href="tilaukset.html">⬚ Tilaukset</a>
             <a href="tiedotteet.html">🔔 Tiedotteet</a>
-         </div>
-      </nav>
+        </div>
+    </nav>
 
-      <main class="container">
-         <section class="page-head">
+    <main class="container">
+        <section class="page-head">
             <div>
-               <h2>Ruokalistan hallinta</h2>
-               <p>Lisää, muokkaa ja poista ruokalajeja</p>
+                <h2>Ruokalistan hallinta</h2>
+                <p>Lisää, muokkaa ja poista ruokalajeja ja päiväteemoja</p>
             </div>
-            <button class="primary-btn" onclick="openModal('foodModal')">+ Lisää uusi ruokalaji</button>
-         </section>
+            <button class="primary-btn" id="addThemeBtn">+ Lisää uusi päiväteema</button>
+        </section>
 
-         <div class="menu-container">
-            <div class="filter-title">Suodata päivämäärän mukaan</div>
-            <div class="chips">
-               <span class="chip active">Kaikki päivät</span>
-               <span class="chip">📅 Valitse päivämäärä</span>
-               <span class="chip">tiistaina 7. huhtikuuta 2026</span>
-               <span class="chip">keskiviikkona 8. huhtikuuta 2026</span>
-               <span class="chip">torstaina 9. huhtikuuta 2026</span>
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Suodata päivämäärällä:</label>
+                <input type="date" id="dateFilter" />
+                <button id="filterDateBtn" class="secondary-btn">Suodata</button>
+                <button id="resetFilterBtn" class="secondary-btn">Näytä kaikki</button>
             </div>
-         </div>
-<!--
-         <div class="menu-container">
-            <div class="menu-left">
-               <h3>Tonkotsu Ramen</h3>
-               <div class="meta-row">
-                  <span class="chip" style="padding: 7px 10px">📅 tiistaina 7. huhtikuuta 2026</span>
-                  <span class="badge">Ramen</span>
-               </div>
-               <p class="menu-desc">Perinteinen japanilainen ramen porsaan liemellä, nuudeleilla ja nitamunilla</p>
-               <span class="allergen">🥛 Laktoositon</span>
-            </div>
-            <div class="menu-right">
-               <div class="price">14.90€</div>
-               <div class="actions" style="margin-top: 10px">
-                  <button class="icon-btn">✎</button>
-                  <button class="icon-btn red">🗑</button>
-               </div>
-            </div>-->
+        </div>
 
-            <!-- MODAL: Add menu item -->
-            <div id="foodModal" class="modal">
-               <div class="modal-content wide">
-                  <h2>Lisää uusi ruokalaji</h2>
-
-                  <div class="form-grid">
-                     <div>
-                        <label>Nimi *</label>
-                        <input type="text" name="name" placeholder="Esim. Tonkotsu Ramen" />
-                     </div>
-
-                     <div>
-                        <label>Hinta (€) *</label>
-                        <input type="number" name="price" value="0" />
-                     </div>
-
-                     <div class="full">
-                        <label>Kuvaus *</label>
-                        <textarea name="desc" placeholder="Kerro ruokalajista..."></textarea>
-                     </div>
-
-                     <div>
-                        <label>Päivämäärä *</label>
-                        <input type="date" name="date" />
-                     </div>
-
-                     <div>
-                        <label>Teema *</label>
-                        <input type="text" name="theme" placeholder="Esim. Ramen, Tacos, Sushi..." />
-                     </div>
-
-                     <div class="full">
-                        <label>Erityisruokavaliot</label>
-                        <div class="checkboxes">
-                           <label><input type="checkbox" /> Vegaaninen</label>
-                           <label><input type="checkbox" /> Gluteeniton</label>
-                           <label><input type="checkbox" /> Laktoositon</label>
-                        </div>
-                     </div>
-                  </div>
-
-                  <div class="modal-actions">
-                     <button id="addMenuItem" class="primary-btn">💾 Lisää ruokalaji</button>
-                     <button onclick="closeModal('foodModal')">Peruuta</button>
-                  </div>
-               </div>
-            </div>
-         </div>
-      </main>
-   </body>
+        <div id="daysContainer" class="days-container"></div>
+    </main>
+</body>
 </html>
