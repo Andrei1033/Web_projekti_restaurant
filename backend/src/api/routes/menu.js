@@ -10,6 +10,7 @@
  *   POST   /api/menu/days
  *   PUT    /api/menu/days/:id
  *   DELETE /api/menu/days/:id
+ *   DELETE /api/menu/theme/:date
  *   POST   /api/menu/days/:id/dishes
  *   DELETE /api/menu/days/:id/dishes/:dishId
  */
@@ -21,6 +22,7 @@ import {
   createDay,
   updateDay,
   deleteDay,
+  deleteDayTheme,
   addDishToDay,
   removeDishFromDay,
 } from '../controllers/menuController.js';
@@ -38,6 +40,7 @@ router.get('/day', getDayMenu);
 router.post('/days', auth, adminOnly, uploadSingle, createDay);
 router.put('/days/:id', auth, adminOnly, uploadSingle, updateDay);
 router.delete('/days/:id', auth, adminOnly, deleteDay);
+router.delete('/theme/:date', auth, adminOnly, deleteDayTheme);
 router.post('/days/:id/dishes', auth, adminOnly, addDishToDay);
 router.delete('/days/:id/dishes/:dishId', auth, adminOnly, removeDishFromDay);
 

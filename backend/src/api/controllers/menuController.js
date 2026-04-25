@@ -313,7 +313,6 @@ const getWeekMenu = async (req, res) => {
     for (let i = 0; i < 7; i++) {
       const currentDate = new Date(monday);
 
-      // ⭐ CRITICAL FIX
       currentDate.setUTCDate(monday.getUTCDate() + i);
 
       const dayName = currentDate.toLocaleDateString('en-US', {
@@ -455,7 +454,6 @@ const getDayMenu = async (req, res) => {
         'Saturday',
       ];
 
-      // ⭐ UTC FIX
       const dayOfWeek = new Date(date + 'T00:00:00Z').getUTCDay();
 
       return res.json({
@@ -464,6 +462,7 @@ const getDayMenu = async (req, res) => {
         theme_title: null,
         theme_image: null,
         dishes: [],
+        menu_id: null,
       });
     }
 
@@ -486,6 +485,7 @@ const getDayMenu = async (req, res) => {
       theme_title: first.theme_title,
       theme_image: first.theme_image,
       dishes,
+      menu_id: first.menu_id,
     });
   } catch (err) {
     console.error('getDayMenu:', err);
@@ -618,6 +618,38 @@ const deleteDay = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// DELETE /api/admin/menu/theme/:date DELETE ALL DAY (this will automatically delete dishes with CASCADE as well)
+// ═══════════════════════════════════════════════════════════════
+const deleteDayTheme = async (req, res) => {
+  try {
+    const {date} = req.params;
+
+    // Etsi daily_menu id date perusteella
+    const [menu] = await pool.query(
+      'SELECT id, theme_image FROM daily_menus WHERE date = ?',
+      [date]
+    );
+
+    if (menu.length === 0) {
+      return res.status(404).json({error: 'Theme not found for this date'});
+    }
+
+    //Remove theme image
+    deleteImageFile(menu[0].theme_image);
+
+    await pool.query('DELETE FROM daily_menus WHERE id = ?', [menu[0].id]);
+
+    res.json({
+      message: 'Theme and all dishes for this day deleted successfully',
+      deletedDate: date,
+    });
+  } catch (err) {
+    console.error('deleteDayTheme:', err);
+    res.status(500).json({error: 'Server error'});
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
 //  POST /api/menu/days/:id/dishes  (Admin) Adds a dish to a daily menu.
 // ═══════════════════════════════════════════════════════════════
 const addDishToDay = async (req, res) => {
@@ -708,6 +740,7 @@ export {
   createDay,
   updateDay,
   deleteDay,
+  deleteDayTheme,
   addDishToDay,
   removeDishFromDay,
   // Upload

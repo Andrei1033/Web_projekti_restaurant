@@ -6,7 +6,7 @@ const API_BASE = "http://localhost:3000/api";
 
 async function fetchAllMenuItems() {
   try {
-    const response = await fetch(`${API_BASE}/admin/menu/all`);
+    const response = await fetch(`${API_BASE}/dishes`);
     if (!response.ok) throw new Error("Failed to fetch menu");
     return await response.json();
   } catch (error) {
@@ -28,11 +28,25 @@ async function fetchMenuByDate(date) {
 
 async function saveDayTheme(date, themeTitle, themeImage = null) {
   try {
-    const response = await fetch(`${API_BASE}/admin/menu/theme`, {
+    // Hae päivän nimi
+    const dateObj = new Date(date);
+    const dayNames = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const dayName = dayNames[dateObj.getUTCDay()];
+
+    const response = await fetch(`${API_BASE}/menu/days`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        date,
+        date: date,
+        day_name: dayName,
         theme_title: themeTitle,
         theme_image: themeImage,
       }),
@@ -45,9 +59,27 @@ async function saveDayTheme(date, themeTitle, themeImage = null) {
   }
 }
 
+async function updateDayTheme(menuId, themeTitle, themeImage = null) {
+  try {
+    const response = await fetch(`${API_BASE}/menu/days/${menuId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        theme_title: themeTitle,
+        theme_image: themeImage,
+      }),
+    });
+    if (!response.ok) throw new Error("Failed to update theme");
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating theme:", error);
+    return null;
+  }
+}
+
 async function addDish(dishData) {
   try {
-    const response = await fetch(`${API_BASE}/admin/menu/dish`, {
+    const response = await fetch(`${API_BASE}/dishes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dishData),
@@ -62,7 +94,7 @@ async function addDish(dishData) {
 
 async function updateDish(dishId, dishData) {
   try {
-    const response = await fetch(`${API_BASE}/admin/menu/dish/${dishId}`, {
+    const response = await fetch(`${API_BASE}/dishes/${dishId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dishData),
@@ -77,7 +109,7 @@ async function updateDish(dishId, dishData) {
 
 async function deleteDish(dishId) {
   try {
-    const response = await fetch(`${API_BASE}/admin/menu/dish/${dishId}`, {
+    const response = await fetch(`${API_BASE}/dishes/${dishId}`, {
       method: "DELETE",
     });
     if (!response.ok) throw new Error("Failed to delete dish");
@@ -90,10 +122,10 @@ async function deleteDish(dishId) {
 
 async function deleteDayTheme(date) {
   try {
-    const response = await fetch(`${API_BASE}/admin/menu/theme/${date}`, {
+    const response = await fetch(`${API_BASE}/menu/theme/${date}`, {
       method: "DELETE",
     });
-    if (!response.ok) throw new Error("Failed to delete theme");
+    if (!response.ok) throw new Error("Failed to delete theme and dishes");
     return true;
   } catch (error) {
     console.error("Error deleting theme:", error);
@@ -140,6 +172,7 @@ window.onclick = function (e) {
 // ===== PÄIVIEN RENDERÖINTI =====
 
 let currentData = {}; // { "2026-04-20": { theme, dishes, date } }
+let filterMode = "upcoming"; // 'upcoming' = only future; 'all' = include past + future
 
 async function loadAndRender() {
   const container = document.getElementById("daysContainer");
@@ -148,12 +181,14 @@ async function loadAndRender() {
   container.innerHTML = '<div class="loading">Ladataan ruokalistaa...</div>';
 
   try {
-    // Haetaan menut seuraaville 30 päivälle
-    // Haetaan menut 30 päivää taaksepäin ja 60 päivää eteenpäin
+    // Kokoa päivämäärät näkymään: joko vain tulevat tai menneet + tulevat
     const today = new Date();
     const dates = [];
-    for (let i = -30; i < 60; i++) {
-      // 30 päivää menneisyyteen, 60 tulevaisuuteen
+    const pastDays = 60;
+    const futureDays = 60;
+    const start = filterMode === "all" ? -pastDays : 0;
+    const end = futureDays;
+    for (let i = start; i <= end; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
       dates.push(d.toISOString().slice(0, 10));
@@ -171,6 +206,7 @@ async function loadAndRender() {
         currentData[date] = {
           theme: data.theme_title || null,
           theme_image: data.theme_image || null,
+          menu_id: data.menu_id || null,
           dishes: data.dishes || [],
           date: date,
         };
@@ -469,7 +505,38 @@ async function saveDish() {
     result = await updateDish(editId, dishData);
     if (result) alert("Ruokalaji päivitetty!");
   } else {
-    result = await addDish(dishData);
+    // 1) Luo ruokalaji
+    const createdDish = await addDish(dishData);
+    if (!createdDish) {
+      alert("Virhe lisättäessä ruokalajia");
+      return;
+    }
+
+    // 2) Varmista että päiväteema (daily_menu) on olemassa ja hae sen id
+    let menuId = currentData[date]?.menu_id || null;
+    if (!menuId) {
+      // Yritä luoda päivä (käyttää teemakenttää, voi olla tyhjä)
+      const createdDay = await saveDayTheme(date, theme || "");
+      if (createdDay && (createdDay.id || createdDay.menu_id)) {
+        menuId = createdDay.id || createdDay.menu_id;
+      } else {
+        // Fallback: hae päivästä tiedot uudelleen
+        const dayInfo = await fetchMenuByDate(date);
+        menuId = dayInfo?.menu_id || null;
+      }
+    }
+
+    // 3) Liitä luotu ruokalaji päivään
+    if (menuId) {
+      const addRes = await addDishToMenu(menuId, createdDish.id);
+      if (!addRes) {
+        alert("Ruokalaji lisätty, mutta sitä ei saatu liitettyä päivään");
+      }
+    } else {
+      alert("Ruokalaji tallennettu, mutta päivää ei voitu luoda tai löytää");
+    }
+
+    result = createdDish;
     if (result) alert("Ruokalaji lisätty!");
   }
 
@@ -478,6 +545,22 @@ async function saveDish() {
     await loadAndRender();
   } else {
     alert("Virhe tallennettaessa ruokalajia");
+  }
+}
+
+// Lisää annoksen liittäminen päivään
+async function addDishToMenu(menuId, dishId, sort_order = 0) {
+  try {
+    const response = await fetch(`${API_BASE}/menu/days/${menuId}/dishes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dish_id: dishId, sort_order }),
+    });
+    if (!response.ok) throw new Error("Failed to add dish to day");
+    return await response.json();
+  } catch (error) {
+    console.error("Error adding dish to menu:", error);
+    return null;
   }
 }
 
@@ -536,10 +619,30 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("filterDateBtn")
     ?.addEventListener("click", filterByDate);
-  document.getElementById("resetFilterBtn")?.addEventListener("click", () => {
-    document.getElementById("dateFilter").value = "";
-    loadAndRender();
-  });
+
+  // Näkymän valitsimet: vain tulevat / koko menu
+  const showUpcomingBtn = document.getElementById("showUpcomingBtn");
+  const showAllBtn = document.getElementById("showAllBtn");
+  if (showUpcomingBtn && showAllBtn) {
+    const updateViewButtons = () => {
+      showUpcomingBtn.classList.toggle("active", filterMode === "upcoming");
+      showAllBtn.classList.toggle("active", filterMode === "all");
+    };
+
+    showUpcomingBtn.addEventListener("click", () => {
+      filterMode = "upcoming";
+      updateViewButtons();
+      loadAndRender();
+    });
+
+    showAllBtn.addEventListener("click", () => {
+      filterMode = "all";
+      updateViewButtons();
+      loadAndRender();
+    });
+
+    updateViewButtons();
+  }
 
   // Alustus
   loadAndRender();
