@@ -4,12 +4,16 @@ import menuRoutes from './routes/menu.js';
 import dishRoutes from './routes/dishes.js';
 import uploadRoutes from './routes/uploads.js';
 
+import adminRoutes from './routes/admin.js';
+
 const router = express.Router();
 
 router.use('/auth', authRoutes);
 router.use('/menu', menuRoutes);
 router.use('/dishes', dishRoutes);
 router.use('/uploads', uploadRoutes);
+
+router.use('/admin', adminRoutes);
 
 // Health check — testaa että API vastaa
 router.get('/health', (_req, res) => {
