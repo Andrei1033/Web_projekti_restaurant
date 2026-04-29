@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import pool from '../../utils/database.js';
+import {fileURLToPath} from 'url';
+import {dirname} from 'path';
+//import {startOfWeek} from 'date-fns';
 
 // ═══════════════════════════════════════════════════════════════
 //  SHARED HELPERS
@@ -10,7 +13,10 @@ import pool from '../../utils/database.js';
  * @param {string|null} filename  e.g. "1712345678_burger.jpg"
  * @returns {string|null}         e.g. "/uploads/menu/1712345678_burger.jpg"
  */
-const imageUrl = (filename) => (filename ? `/uploads/menu/${filename}` : null);
+const imageUrl = (filename) =>
+  filename ? `../../uploads/menu/${filename}` : null;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Deletes an image file from disk.
@@ -30,33 +36,41 @@ const deleteImageFile = (url) => {
   fs.unlink(filepath, () => {});
 };
 
-/**
- * Converts a Date object or MySQL date value to "YYYY-MM-DD" string.
- * @param {Date|string} date
- * @returns {string}
- */
+// ═══════════════════════════════════════════════════════════════
+// DATE HELPERS (UTC SAFE)
+// ═══════════════════════════════════════════════════════════════
+
 const toDateStr = (date) => {
   if (!date) return null;
-  if (date instanceof Date) return date.toISOString().slice(0, 10);
-  return date.toString().slice(0, 10);
+
+  const d = date instanceof Date ? date : new Date(date);
+
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
 };
 
-/**
- * Parses ISO week string "2026-W14" into the Monday Date of that week.
- * @param {string} weekStr
- * @returns {Date}
- */
-const mondayOfISOWeek = (weekStr) => {
-  const [yearStr, wStr] = weekStr.split('-W');
-  const year = parseInt(yearStr, 10);
-  const weekNum = parseInt(wStr, 10);
-  const jan4 = new Date(year, 0, 4);
-  const monday = new Date(jan4);
-  monday.setDate(
-    jan4.getDate() - ((jan4.getDay() + 6) % 7) + (weekNum - 1) * 7
-  );
+// ISO WEEK → Monday (UTC SAFE)
+function mondayOfISOWeek(weekString) {
+  const [year, week] = weekString.split('-W');
+
+  const yearNum = Number(year);
+  const weekNum = Number(week);
+
+  const jan4 = new Date(Date.UTC(yearNum, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;
+
+  const mondayWeek1 = new Date(jan4);
+  mondayWeek1.setUTCDate(jan4.getUTCDate() - (jan4Day - 1));
+
+  const monday = new Date(mondayWeek1);
+  monday.setUTCDate(mondayWeek1.getUTCDate() + (weekNum - 1) * 7);
+  monday.setUTCHours(0, 0, 0, 0);
+
   return monday;
-};
+}
 
 /*dishController part
  * Endpoints handled:
@@ -275,17 +289,49 @@ const getWeekMenu = async (req, res) => {
     const weekParam = req.query.week;
     let monday;
 
+    // ISO week
     if (weekParam && /^\d{4}-W\d{1,2}$/.test(weekParam)) {
       monday = mondayOfISOWeek(weekParam);
     } else {
+      // CURRENT WEEK (ISO SAFE)
       const now = new Date();
-      const day = now.getDay() || 7;
-      monday = new Date(now);
-      monday.setDate(now.getDate() - day + 1);
+      const today = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+      );
+
+      // ISO weekday (1–7)
+      const isoDay = today.getUTCDay() === 0 ? 7 : today.getUTCDay();
+
+      // oikea maanantai
+      monday = new Date(today);
+      monday.setUTCDate(today.getUTCDate() - isoDay + 1);
+    }
+
+    // Build all weekdays MON → SUN
+    const weekdays = [];
+
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(monday);
+
+      currentDate.setUTCDate(monday.getUTCDate() + i);
+
+      const dayName = currentDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        timeZone: 'UTC',
+      });
+
+      weekdays.push({
+        date: toDateStr(currentDate),
+        day_name: dayName,
+      });
     }
 
     const mondayStr = toDateStr(monday);
-    const fridayStr = toDateStr(new Date(monday.getTime() + 4 * 86400000));
+
+    const sunday = new Date(monday);
+    sunday.setUTCDate(monday.getUTCDate() + 6);
+
+    const sundayStr = toDateStr(sunday);
 
     const [rows] = await pool.query(
       `SELECT
@@ -301,21 +347,22 @@ const getWeekMenu = async (req, res) => {
          d.current_dish_image,
          d.dietary_tags,
          dmd.sort_order
-       FROM   daily_menus dm
+       FROM daily_menus dm
        LEFT JOIN daily_menu_dishes dmd ON dmd.daily_menu_id = dm.id
-       LEFT JOIN dishes d              ON d.id = dmd.dish_id AND d.is_active = 1
-       WHERE  dm.date BETWEEN ? AND ?
-       ORDER  BY dm.date ASC, dmd.sort_order ASC`,
-      [mondayStr, fridayStr]
+       LEFT JOIN dishes d ON d.id = dmd.dish_id
+       WHERE dm.date BETWEEN ? AND ?
+       ORDER BY dm.date ASC, dmd.sort_order ASC`,
+      [mondayStr, sundayStr]
     );
 
-    // Group rows into { "YYYY-MM-DD": { ...dayInfo, dishes: [...] } }
-    const result = {};
+    // Group DB rows
+    const menuMap = {};
+
     for (const row of rows) {
       const key = toDateStr(row.date);
 
-      if (!result[key]) {
-        result[key] = {
+      if (!menuMap[key]) {
+        menuMap[key] = {
           date: key,
           day_name: row.day_name,
           theme_title: row.theme_title,
@@ -325,7 +372,7 @@ const getWeekMenu = async (req, res) => {
       }
 
       if (row.dish_id) {
-        result[key].dishes.push({
+        menuMap[key].dishes.push({
           id: row.dish_id,
           name: row.name,
           description: row.description,
@@ -333,6 +380,23 @@ const getWeekMenu = async (req, res) => {
           current_dish_image: row.current_dish_image,
           dietary_tags: row.dietary_tags,
         });
+      }
+    }
+
+    // Fill missing days
+    const result = {};
+
+    for (const weekday of weekdays) {
+      if (menuMap[weekday.date]) {
+        result[weekday.date] = menuMap[weekday.date];
+      } else {
+        result[weekday.date] = {
+          date: weekday.date,
+          day_name: weekday.day_name,
+          theme_title: null,
+          theme_image: null,
+          dishes: [],
+        };
       }
     }
 
@@ -370,19 +434,40 @@ const getDayMenu = async (req, res) => {
          d.current_dish_image,
          d.dietary_tags,
          dmd.sort_order
-       FROM   daily_menus dm
+       FROM daily_menus dm
        LEFT JOIN daily_menu_dishes dmd ON dmd.daily_menu_id = dm.id
-       LEFT JOIN dishes d              ON d.id = dmd.dish_id AND d.is_active = 1
-       WHERE  dm.date = ?
-       ORDER  BY dmd.sort_order ASC`,
+       LEFT JOIN dishes d ON d.id = dmd.dish_id
+       WHERE dm.date = ?
+       ORDER BY dmd.sort_order ASC`,
       [date]
     );
 
+    // Day not created yet
     if (rows.length === 0) {
-      return res.json({date, dishes: []});
+      const dayNames = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ];
+
+      const dayOfWeek = new Date(date + 'T00:00:00Z').getUTCDay();
+
+      return res.json({
+        date,
+        day_name: dayNames[dayOfWeek],
+        theme_title: null,
+        theme_image: null,
+        dishes: [],
+        menu_id: null,
+      });
     }
 
     const first = rows[0];
+
     const dishes = rows
       .filter((r) => r.dish_id)
       .map((r) => ({
@@ -400,6 +485,7 @@ const getDayMenu = async (req, res) => {
       theme_title: first.theme_title,
       theme_image: first.theme_image,
       dishes,
+      menu_id: first.menu_id,
     });
   } catch (err) {
     console.error('getDayMenu:', err);
@@ -532,6 +618,38 @@ const deleteDay = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
+// DELETE /api/admin/menu/theme/:date DELETE ALL DAY (this will automatically delete dishes with CASCADE as well)
+// ═══════════════════════════════════════════════════════════════
+const deleteDayTheme = async (req, res) => {
+  try {
+    const {date} = req.params;
+
+    // Etsi daily_menu id date perusteella
+    const [menu] = await pool.query(
+      'SELECT id, theme_image FROM daily_menus WHERE date = ?',
+      [date]
+    );
+
+    if (menu.length === 0) {
+      return res.status(404).json({error: 'Theme not found for this date'});
+    }
+
+    //Remove theme image
+    deleteImageFile(menu[0].theme_image);
+
+    await pool.query('DELETE FROM daily_menus WHERE id = ?', [menu[0].id]);
+
+    res.json({
+      message: 'Theme and all dishes for this day deleted successfully',
+      deletedDate: date,
+    });
+  } catch (err) {
+    console.error('deleteDayTheme:', err);
+    res.status(500).json({error: 'Server error'});
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
 //  POST /api/menu/days/:id/dishes  (Admin) Adds a dish to a daily menu.
 // ═══════════════════════════════════════════════════════════════
 const addDishToDay = async (req, res) => {
@@ -622,6 +740,7 @@ export {
   createDay,
   updateDay,
   deleteDay,
+  deleteDayTheme,
   addDishToDay,
   removeDishFromDay,
   // Upload

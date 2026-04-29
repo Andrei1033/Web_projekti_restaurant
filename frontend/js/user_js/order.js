@@ -13,197 +13,190 @@
  *   const items = await fetch(`/api/menu/day?date=YYYY-MM-DD`).then(r => r.json());
  */
 
-'use strict';
+"use strict";
 
 /* ── Config ────────────────────────────────────────────────── */
-
-/**
- * Placeholder menu data.
- * Key = "YYYY-MM-DD" (the actual date).
- * Each day is an array of dish objects.
- *
- * diet: array — possible values: 'vegan', 'glutenfree', 'lactosefree'
- * img: path to image file in assets/menu/
- */
-const DAILY_MENU = {
-  '2026-04-06': [
-    {
-      id: 'mon-1',
-      name: 'Shoyu Ramen',
-      desc: 'Clear soy broth, wavy noodles, chashu pork belly, soft-boiled egg & nori.',
-      price: 15.90,
-      img: '../assets/menu/ramen.jpg',
-      diet: ['lactosefree']
-    },
-    {
-      id: 'mon-2',
-      name: 'Miso Veggie Ramen',
-      desc: 'Rich white miso broth, tofu, shiitake mushrooms & spring onion.',
-      price: 14.50,
-      img: '../assets/menu/ramen_veg.jpg',
-      diet: ['vegan', 'lactosefree']
-    },
-    {
-      id: 'mon-3',
-      name: 'Gyoza (6 pcs)',
-      desc: 'Pan-fried pork & cabbage dumplings with yuzu ponzu dipping sauce.',
-      price: 9.00,
-      img: '../assets/menu/gyoza.jpg',
-      diet: []
-    }
-  ],
-  '2026-04-07': [
-    {
-      id: 'tue-1',
-      name: 'Smash Burger',
-      desc: 'Double smash patty, aged cheddar, caramelised onion & wolf sauce.',
-      price: 13.90,
-      img: '../assets/menu/burger.jpg',
-      diet: ['glutenfree']
-    },
-    {
-      id: 'tue-2',
-      name: 'Mushroom Smash',
-      desc: 'Portobello patty, vegan cheese, sriracha aioli & pickled jalapeño.',
-      price: 13.50,
-      img: '../assets/menu/burger_veg.jpg',
-      diet: ['vegan', 'glutenfree']
-    },
-    {
-      id: 'tue-3',
-      name: 'Wolf Fries',
-      desc: 'Crispy fries with rosemary salt & house aioli.',
-      price: 5.00,
-      img: '../assets/menu/fries.jpg',
-      diet: ['vegan', 'glutenfree', 'lactosefree']
-    }
-  ],
-  '2026-04-09': [
-    {
-      id: 'wed-1',
-      name: 'Birria Tacos',
-      desc: 'Braised beef in adobo, Oaxaca cheese, consommé for dipping.',
-      price: 14.00,
-      img: '../assets/menu/tacos.jpg',
-      diet: []
-    },
-    {
-      id: 'wed-2',
-      name: 'Jackfruit Tacos',
-      desc: 'Pulled jackfruit, guacamole, pico de gallo & lime crema.',
-      price: 13.00,
-      img: '../assets/menu/tacos_veg.jpg',
-      diet: ['vegan', 'glutenfree']
-    }
-  ]
-  // Add more dates as needed — or replace with API call
-};
+const API_BASE = "http://localhost:3000/api";
 
 /* ── Diet tag config ── */
 const DIET_LABELS = {
-  vegan:       { label: 'Vegan',         css: 'tag-vegan'   },
-  glutenfree:  { label: 'Gluten-free',   css: 'tag-gluten'  },
-  lactosefree: { label: 'Lactose-free',  css: 'tag-lactose' }
+  vegan: { label: "Vegan", css: "tag-vegan" },
+  glutenfree: { label: "Gluten-free", css: "tag-gluten" },
+  lactosefree: { label: "Lactose-free", css: "tag-lactose" },
 };
 
 /* ── Helpers ── */
 
-/** Format a Date as "YYYY-MM-DD" */
 function toDateKey(date) {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-/** Format a Date as "7 Apr 2026" */
 function fmtDate(date) {
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
-/** Day name from Date */
-const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+/**
+ * Fetch menu for specific date from API
+ * @param {string} date - "YYYY-MM-DD"
+ * @returns {Promise<Object>} - Menu data
+ */
+async function fetchDayMenu(date) {
+  try {
+    const response = await fetch(`${API_BASE}/menu/day?date=${date}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching day menu:", error);
+    return null;
+  }
+}
+
+/**
+ * Get image URL
+ */
+function getImageUrl(imagePath) {
+  if (!imagePath) return null;
+  if (imagePath.startsWith("http")) return imagePath;
+
+  // Poistetaan mahdollinen etutavu ja varmistetaan että polku on oikein
+  const cleanPath = imagePath.replace(/^\/+/, ""); // Poista alusta olevat /
+
+  // Käytetään staattista base URL:ia (ilman /api)
+  return `http://localhost:3000/${cleanPath}`;
+}
 
 /* ── State ── */
-const TODAY        = new Date();
-TODAY.setHours(0,0,0,0);
+const TODAY = new Date();
+TODAY.setHours(0, 0, 0, 0);
 
-let currentDate    = new Date(TODAY); // the date currently shown
-let cart           = {};              // { itemId: { item, qty } }
+let currentDate = new Date(TODAY);
+let cart = {};
 
 /* ── DOM refs ── */
-const grid          = document.getElementById('order-menu-list');
-const displayName   = document.getElementById('display-day-name');
-const displayDate   = document.getElementById('display-date');
-const todayPill     = document.getElementById('order-today-pill');
-const summaryBar    = document.getElementById('order-summary-bar');
-const osbCount      = document.getElementById('osb-item-count');
-const osbTotal      = document.getElementById('osb-total');
-const checkoutBtn   = document.getElementById('osb-checkout-btn');
+const grid = document.getElementById("order-menu-list");
+const displayName = document.getElementById("display-day-name");
+const displayDate = document.getElementById("display-date");
+const todayPill = document.getElementById("order-today-pill");
+const summaryBar = document.getElementById("order-summary-bar");
+const osbCount = document.getElementById("osb-item-count");
+const osbTotal = document.getElementById("osb-total");
+const checkoutBtn = document.getElementById("osb-checkout-btn");
 
 /* ── Render day ── */
-function renderDay(date) {
-  const key      = toDateKey(date);
-  const isToday  = key === toDateKey(TODAY);
-  const items    = DAILY_MENU[key] || null;
+async function renderDay(date) {
+  const key = toDateKey(date);
+  const isToday = key === toDateKey(TODAY);
 
   // Update header labels
   displayName.textContent = DAY_NAMES[date.getDay()].toUpperCase();
   displayDate.textContent = fmtDate(date);
-  todayPill.classList.toggle('hidden', !isToday);
+  todayPill.classList.toggle("hidden", !isToday);
 
-  // Fade out
-  grid.classList.add('fading');
+  // Show loading state
+  grid.classList.add("fading");
+  grid.innerHTML = '<div class="loading-spinner">Loading menu...</div>';
 
-  setTimeout(() => {
-    grid.innerHTML = '';
+  try {
+    // Fetch real data from API
+    const menuData = await fetchDayMenu(key);
 
-    if (!items || items.length === 0) {
-      grid.innerHTML = `
-        <div class="order-empty-state">
-          <span class="empty-wolf">🐺</span>
-          <h3>No menu yet</h3>
-          <p>The kitchen is still planning this day's theme.<br>Check back soon!</p>
-        </div>`;
-    } else {
-      items.forEach((item, i) => {
-        const card = buildItemCard(item, i);
-        grid.appendChild(card);
-      });
-    }
+    setTimeout(() => {
+      grid.innerHTML = "";
 
-    grid.classList.remove('fading');
-  }, 180);
+      if (!menuData || !menuData.dishes || menuData.dishes.length === 0) {
+        grid.innerHTML = `
+          <div class="order-empty-state">
+            <span class="empty-wolf">🐺</span>
+            <h3>No menu yet</h3>
+            <p>The kitchen is still planning this day's theme.<br>Check back soon!</p>
+          </div>`;
+      } else {
+        // Transform API dishes to format needed for display
+        const items = menuData.dishes.map((dish) => ({
+          id: dish.id,
+          name: dish.name,
+          desc: dish.description || "Delicious dish prepared with care",
+          price: parseFloat(dish.price),
+          img: getImageUrl(dish.current_dish_image),
+          diet: dish.dietary_tags ? dish.dietary_tags.split(",") : [],
+        }));
+
+        items.forEach((item, i) => {
+          const card = buildItemCard(item, i);
+          grid.appendChild(card);
+        });
+      }
+
+      grid.classList.remove("fading");
+    }, 180);
+  } catch (error) {
+    console.error("Error rendering day:", error);
+    grid.innerHTML = `
+      <div class="order-empty-state">
+        <span class="empty-wolf">⚠️</span>
+        <h3>Error loading menu</h3>
+        <p>Failed to load menu. Please try again later.</p>
+      </div>`;
+    grid.classList.remove("fading");
+  }
 }
 
 /* ── Build a single menu item card ── */
 function buildItemCard(item, index) {
-  const card = document.createElement('div');
-  card.className = 'order-item-card';
+  const card = document.createElement("div");
+  card.className = "order-item-card";
   card.style.animationDelay = `${index * 60}ms`;
 
-  // Diet tags HTML
-  const tagsHTML = item.diet.length
-    ? item.diet.map(d => {
-        const t = DIET_LABELS[d];
-        return t ? `<span class="tag ${t.css}">${t.label}</span>` : '';
-      }).join('')
-    : '';
+  const tagsHTML =
+    item.diet && item.diet.length
+      ? item.diet
+          .map((d) => {
+            const t = DIET_LABELS[d.trim()];
+            return t ? `<span class="tag ${t.css}">${t.label}</span>` : "";
+          })
+          .join("")
+      : "";
 
-  // Current quantity from cart
   const currentQty = cart[item.id]?.qty || 0;
 
   card.innerHTML = `
-    <div class="order-item-img${item.img ? '' : ' no-img'}">
-      ${item.img
-        ? `<img src="${item.img}" alt="${item.name}"
+    <div class="order-item-img${item.img ? "" : " no-img"}">
+      ${
+        item.img
+          ? `<img src="${item.img}" alt="${item.name}"
                onerror="this.parentElement.classList.add('no-img'); this.remove();">`
-        : ''}
+          : '<div class="placeholder-img"></div>'
+      }
     </div>
     <div class="order-item-body">
       <div class="item-header">
-        <span class="item-name">${item.name}</span>
+        <span class="item-name">${escapeHtml(item.name)}</span>
         <span class="item-price">${item.price.toFixed(2)} €</span>
       </div>
-      <p class="item-desc">${item.desc}</p>
-      ${tagsHTML ? `<div class="diet-tags">${tagsHTML}</div>` : ''}
+      <p class="item-desc">${escapeHtml(item.desc)}</p>
+      ${tagsHTML ? `<div class="diet-tags">${tagsHTML}</div>` : ""}
       <div class="item-actions">
         <div class="qty-control" data-id="${item.id}">
           <button class="qty-btn qty-minus" aria-label="Decrease quantity">−</button>
@@ -217,34 +210,31 @@ function buildItemCard(item, index) {
     </div>
   `;
 
-  /* ── Wire up quantity buttons ── */
-  // eslint-disable-next-line no-unused-vars
-  const qtyControl = card.querySelector('.qty-control');
-  const qtyDisplay = card.querySelector('.qty-value');
-  const addBtn     = card.querySelector('.add-to-cart-btn');
-
   let localQty = currentQty;
+  const qtyDisplay = card.querySelector(".qty-value");
+  const addBtn = card.querySelector(".add-to-cart-btn");
 
-  card.querySelector('.qty-minus').addEventListener('click', () => {
-    if (localQty > 1) { localQty--; qtyDisplay.textContent = localQty; }
+  card.querySelector(".qty-minus").addEventListener("click", () => {
+    if (localQty > 1) {
+      localQty--;
+      qtyDisplay.textContent = localQty;
+    }
   });
 
-  card.querySelector('.qty-plus').addEventListener('click', () => {
+  card.querySelector(".qty-plus").addEventListener("click", () => {
     localQty++;
     qtyDisplay.textContent = localQty;
   });
 
-  addBtn.addEventListener('click', () => {
+  addBtn.addEventListener("click", () => {
     const qty = Math.max(localQty, 1);
     addToCart(item, qty);
-    // Flash "Added!" feedback
-    addBtn.textContent = 'Added!';
-    addBtn.classList.add('added');
+    addBtn.textContent = "Added!";
+    addBtn.classList.add("added");
     setTimeout(() => {
-      addBtn.textContent = 'Add to cart';
-      addBtn.classList.remove('added');
+      addBtn.textContent = "Add to cart";
+      addBtn.classList.remove("added");
     }, 1400);
-    // Reset local qty display to 1 after adding
     localQty = 1;
     qtyDisplay.textContent = 1;
   });
@@ -263,37 +253,50 @@ function addToCart(item, qty) {
 }
 
 function updateSummaryBar() {
-  const totalQty   = Object.values(cart).reduce((s, e) => s + e.qty, 0);
-  const totalPrice = Object.values(cart).reduce((s, e) => s + e.item.price * e.qty, 0);
+  const totalQty = Object.values(cart).reduce((s, e) => s + e.qty, 0);
+  const totalPrice = Object.values(cart).reduce(
+    (s, e) => s + e.item.price * e.qty,
+    0,
+  );
 
-  osbCount.textContent = `${totalQty} item${totalQty !== 1 ? 's' : ''}`;
-  osbTotal.textContent  = `${totalPrice.toFixed(2)} €`;
+  osbCount.textContent = `${totalQty} item${totalQty !== 1 ? "s" : ""}`;
+  osbTotal.textContent = `${totalPrice.toFixed(2)} €`;
 
   const hasItems = totalQty > 0;
-  summaryBar.classList.toggle('visible', hasItems);
+  summaryBar.classList.toggle("visible", hasItems);
   checkoutBtn.disabled = !hasItems;
+}
+
+/* ── Helper to escape HTML ── */
+function escapeHtml(str) {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /* ── Checkout modal population ── */
 function openCheckoutModal() {
-  const summary   = document.getElementById('checkout-summary');
-  const totalEl   = document.getElementById('checkout-total-price');
-  const overlay   = document.getElementById('modal-overlay');
-  const modal     = document.getElementById('checkout-modal');
+  const summary = document.getElementById("checkout-summary");
+  const totalEl = document.getElementById("checkout-total-price");
+  const overlay = document.getElementById("modal-overlay");
+  const modal = document.getElementById("checkout-modal");
 
   if (!summary || !modal) return;
 
-  // Build summary rows
-  summary.innerHTML = '';
+  summary.innerHTML = "";
   let total = 0;
 
   Object.values(cart).forEach(({ item, qty }) => {
     const lineTotal = item.price * qty;
     total += lineTotal;
-    const row = document.createElement('div');
-    row.className = 'checkout-summary-row';
+    const row = document.createElement("div");
+    row.className = "checkout-summary-row";
     row.innerHTML = `
-      <span class="csr-name">${item.name}</span>
+      <span class="csr-name">${escapeHtml(item.name)}</span>
       <span class="csr-qty">×${qty}</span>
       <span class="csr-price">${lineTotal.toFixed(2)} €</span>
     `;
@@ -301,46 +304,64 @@ function openCheckoutModal() {
   });
 
   totalEl.textContent = `${total.toFixed(2)} €`;
-
-  // Show modal via existing modals.js overlay mechanism
-  overlay.classList.remove('hidden');
-  modal.classList.remove('hidden');
+  overlay.classList.remove("hidden");
+  modal.classList.remove("hidden");
 }
 
 /* ── Checkout form submit ── */
-function setupCheckoutForm() {
-  const form = document.getElementById('checkout-form');
+async function setupCheckoutForm() {
+  const form = document.getElementById("checkout-form");
   if (!form) return;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name    = document.getElementById('co-name').value.trim();
-    const surname = document.getElementById('co-lastname').value.trim();
-    const email   = document.getElementById('co-email').value.trim();
+    const name = document.getElementById("co-name").value.trim();
+    const surname = document.getElementById("co-lastname").value.trim();
+    const email = document.getElementById("co-email").value.trim();
 
     if (!name || !surname || !email) return;
 
-    // TODO: POST to /api/orders with cart data + customer info
-    console.log('Order placed:', { name, surname, email, cart });
+    const orderData = {
+      guest_name: `${name} ${surname}`,
+      guest_email: email,
+      pickup_date: toDateKey(currentDate),
+      items: Object.values(cart).map(({ item, qty }) => ({
+        dish_id: item.id,
+        quantity: qty,
+        unit_price: item.price,
+      })),
+    };
 
-    // Clear cart & close
-    cart = {};
-    updateSummaryBar();
-    document.getElementById('modal-overlay').classList.add('hidden');
-    document.getElementById('checkout-modal').classList.add('hidden');
-    form.reset();
+    try {
+      const response = await fetch(`${API_BASE}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+      });
 
-    // Simple confirmation — replace with a proper success screen later
-    alert(`Thank you, ${name}! Your order has been received. Confirmation sent to ${email}.`);
+      if (!response.ok) throw new Error("Order submission failed");
+
+      cart = {};
+      updateSummaryBar();
+      document.getElementById("modal-overlay").classList.add("hidden");
+      document.getElementById("checkout-modal").classList.add("hidden");
+      form.reset();
+
+      alert(
+        `Thank you, ${name}! Your order has been received. Confirmation sent to ${email}.`,
+      );
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Sorry, there was an error placing your order. Please try again.");
+    }
   });
 
-  // "Register here" inside checkout modal opens the register modal
-  const regLink = document.getElementById('checkout-register-link');
+  const regLink = document.getElementById("checkout-register-link");
   if (regLink) {
-    regLink.addEventListener('click', (e) => {
+    regLink.addEventListener("click", (e) => {
       e.preventDefault();
-      document.getElementById('checkout-modal').classList.add('hidden');
-      document.getElementById('register-modal')?.classList.remove('hidden');
+      document.getElementById("checkout-modal").classList.add("hidden");
+      document.getElementById("register-modal")?.classList.remove("hidden");
     });
   }
 }
@@ -352,33 +373,43 @@ function changeDay(direction) {
 }
 
 /* ── Init ── */
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if URL has ?day=wed&week=2026-W14 from week menu link
-  const params  = new URLSearchParams(window.location.search);
-  const dayParam  = params.get('day');
-  const weekParam = params.get('week');
+document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const dateParam = params.get("date");
 
-  if (dayParam && weekParam) {
-    // Parse week + day into a date
-    const [yearStr, wStr] = weekParam.split('-W');
-    const year    = parseInt(yearStr, 10);
-    const weekNum = parseInt(wStr, 10);
-    const jan4    = new Date(year, 0, 4);
-    const monday  = new Date(jan4);
-    monday.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7) + (weekNum - 1) * 7);
-    const dayOffset = ['mon','tue','wed','thu','fri'].indexOf(dayParam);
-    if (dayOffset >= 0) {
-      currentDate = new Date(monday);
-      currentDate.setDate(monday.getDate() + dayOffset);
+  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    currentDate = new Date(dateParam);
+    currentDate.setHours(0, 0, 0, 0);
+  } else {
+    const dayParam = params.get("day");
+    const weekParam = params.get("week");
+    if (dayParam && weekParam) {
+      const [yearStr, wStr] = weekParam.split("-W");
+      const year = parseInt(yearStr, 10);
+      const weekNum = parseInt(wStr, 10);
+      const jan4 = new Date(year, 0, 4);
+      const monday = new Date(jan4);
+      monday.setDate(
+        jan4.getDate() - ((jan4.getDay() + 6) % 7) + (weekNum - 1) * 7,
+      );
+      const dayOffset = ["mon", "tue", "wed", "thu", "fri"].indexOf(dayParam);
+      if (dayOffset >= 0) {
+        currentDate = new Date(monday);
+        currentDate.setDate(monday.getDate() + dayOffset);
+        currentDate.setHours(0, 0, 0, 0);
+      }
     }
   }
 
   renderDay(currentDate);
 
-  document.getElementById('prev-day')?.addEventListener('click', () => changeDay(-1));
-  document.getElementById('next-day')?.addEventListener('click', () => changeDay(+1));
+  document
+    .getElementById("prev-day")
+    ?.addEventListener("click", () => changeDay(-1));
+  document
+    .getElementById("next-day")
+    ?.addEventListener("click", () => changeDay(+1));
 
-  checkoutBtn?.addEventListener('click', openCheckoutModal);
-
+  checkoutBtn?.addEventListener("click", openCheckoutModal);
   setupCheckoutForm();
 });

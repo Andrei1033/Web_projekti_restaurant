@@ -41,10 +41,10 @@ GET {{base}}/api/dishes/1
 GET {{base}}/api/menu/week
 
 ### Hae tietyn viikon menu (vaihda viikkonumero)
-GET {{base}}/api/menu/week?week=2026-W17
+GET {{base}}/api/menu/week?week=2026-W15
 
 ### Hae tänään menu
-GET {{base}}/api/menu/day?date=2026-04-22
+GET {{base}}/api/menu/day?date=2026-04-23
 
 ### Hae päivä jolla ei ole menua — pitäisi palauttaa { dishes: [] }
 GET {{base}}/api/menu/day?date=2020-01-01
@@ -156,3 +156,107 @@ Content-Type: application/json
 
 ### Olematon ID — pitäisi palauttaa 404
 GET {{base}}/api/dishes/99999
+
+
+
+
+### 1. First, check current week (Week 17 - April 20-26, 2026)
+GET {{base}}/api/menu/week?week=2026-W17
+
+### 2. Create a daily menu for TODAY (2026-04-23)
+POST {{base}}/api/menu/days
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "date": "2026-04-23",
+  "day_name": "Thursday",
+  "theme_title": "Ramen Special Day"
+}
+
+### 3. Create another daily menu for tomorrow (2026-04-24)
+POST {{base}}/api/menu/days
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "date": "2026-04-24",
+  "day_name": "Friday",
+  "theme_title": "Sushi & Burger Fusion"
+}
+
+### 4. Add dishes to today's menu (2026-04-23)
+# First, check what dish IDs exist
+GET {{base}}/api/dishes
+
+# Then add Miso Veggie Ramen (id: 2) to today's menu
+POST {{base}}/api/menu/days/16/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dish_id": 2,
+  "sort_order": 1
+}
+
+### 5. Add more dishes to today's menu
+# Add Gyoza (id: 3)
+POST {{base}}/api/menu/days/16/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dish_id": 3,
+  "sort_order": 2
+}
+
+# Add Wolf Fries (id: 6)
+POST {{base}}/api/menu/days/16/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dish_id": 6,
+  "sort_order": 3
+}
+
+### 6. Add dishes to tomorrow's menu (2026-04-24)
+# Add Classic Smash Burger (id: 4)
+POST {{base}}/api/menu/days/17/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dish_id": 4,
+  "sort_order": 1
+}
+
+# Add Birria Tacos (id: 7)
+POST {{base}}/api/menu/days/17/dishes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dish_id": 7,
+  "sort_order": 2
+}
+
+### 7. Fetch the updated week menu to see all changes
+GET {{base}}/api/menu/week?week=2026-W17
+
+### 8. Fetch just today's menu specifically
+GET {{base}}/api/menu/day?date=2026-04-23
+
+### 9. Test getting menu without date (should return 400)
+GET {{base}}/api/menu/day
+
+### 10. Clean up - remove a dish from today's menu (if needed)
+DELETE {{base}}/api/menu/days/16/dishes/3
+Authorization: Bearer {{token}}
+
+
+# päivän tarkistus
+curl "http://localhost:3000/api/menu/day?date=2026-04-24"
+
+# viikon tarkistus (esimerkki ISO-viikolla)
+curl "http://localhost:3000/api/menu/week?week=2026-W17"
