@@ -1,13 +1,23 @@
-// auth //
-const auth = (req, res, next) => {
-  // DEVELOPMENT ONLY — hyväksyy kaikki pyynnöt ilman tokenia
-  // Lisää fake user jotta adminOnly-middleware ei kaadu
-  req.user = {
-    id: 1,
-    email: 'dev@nightwolf.fi',
-    role: 'admin',
-  };
-  next();
+import jwt from 'jsonwebtoken';
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({error: 'No token provided'});
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = decoded; // clean & simple
+
+    next();
+  } catch {
+    return res.status(403).json({error: 'Invalid token'});
+  }
 };
 
-export default auth;
+export default authenticateToken;
