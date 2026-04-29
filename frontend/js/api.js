@@ -1,6 +1,32 @@
-document
-  .getElementById("login-form")
-  .addEventListener("submit", async (evt) => {
+// ==========================
+// HELPERS
+// ==========================
+
+function getUser() {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function setUser(user) {
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "../user_html/index.html";
+}
+
+// ==========================
+// LOGIN
+// ==========================
+
+const loginForm = document.getElementById("login-form");
+
+if (loginForm) {
+  loginForm.addEventListener("submit", async (evt) => {
     evt.preventDefault();
 
     const email = document.getElementById("login-identifier").value;
@@ -12,10 +38,7 @@ document
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const json = await response.json();
@@ -24,17 +47,32 @@ document
         throw new Error(json.error || "Login failed");
       }
 
-      console.log("LOGIN OK:", json);
+      setUser(json.user);
 
-      localStorage.setItem("user", JSON.stringify(json.user));
+      console.log("LOGIN OK:", json.user);
+
+      // 🔥 ADMIN redirect
+      if (json.user.role === "admin") {
+        window.location.href = "../admin_html/ruokalista.html";
+      } else {
+        alert("Welcome 🐺");
+        location.reload();
+      }
     } catch (e) {
       console.log("LOGIN ERROR:", e.message);
+      alert(e.message);
     }
   });
+}
 
-document
-  .getElementById("register-form")
-  .addEventListener("submit", async (evt) => {
+// ==========================
+// REGISTER
+// ==========================
+
+const registerForm = document.getElementById("register-form");
+
+if (registerForm) {
+  registerForm.addEventListener("submit", async (evt) => {
     evt.preventDefault();
 
     const username = document.getElementById("reg-username").value;
@@ -53,11 +91,7 @@ document
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-        }),
+        body: JSON.stringify({ username, email, password }),
       });
 
       const json = await response.json();
@@ -66,10 +100,36 @@ document
         throw new Error(json.error || "Register failed");
       }
 
-      console.log("REGISTER OK:", json);
-
       alert("Account created 🐺");
     } catch (e) {
       console.log("REGISTER ERROR:", e.message);
+      alert(e.message);
     }
   });
+}
+
+// ==========================
+// AUTO UI
+// ==========================
+
+const user = getUser();
+
+if (user) {
+  console.log("Logged in:", user);
+
+  const loginBtn = document.getElementById("login_button");
+  const profileBtn = document.getElementById("profile_button");
+
+  if (loginBtn) loginBtn.classList.add("hidden");
+  if (profileBtn) profileBtn.classList.remove("hidden");
+}
+
+// ==========================
+// LOGOUT
+// ==========================
+
+const logoutBtn = document.getElementById("profile-logout");
+
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", logout);
+}

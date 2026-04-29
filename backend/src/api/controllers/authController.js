@@ -26,7 +26,7 @@ const register = async (req, res) => {
     res.status(500).json({error: err.message});
   }
 };
-
+/*
 const login = async (req, res) => {
   try {
     console.log(req.body);
@@ -56,7 +56,7 @@ const login = async (req, res) => {
     res.status(500).json({error: err.message});
   }
 };
-
+*/
 const getMe = async (req, res) => {
   console.log('getMe', res.locals.user);
 
@@ -67,4 +67,41 @@ const getMe = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const user = await findUserByEmail(req.body.email);
+
+    if (!user) {
+      return res.status(401).json({error: 'Invalid credentials'});
+    }
+
+    const match = await bcrypt.compare(req.body.password, user.password_hash);
+
+    if (!match) {
+      return res.status(401).json({error: 'Invalid credentials'});
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.user_id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {expiresIn: '7d'}
+    );
+
+    res.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.user_id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+};
 export {register, login, getMe};

@@ -1,54 +1,58 @@
 <!doctype html>
 <html lang="fi">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NightWolf Admin - Ruokalista</title>
     <script src="../js/admin_js/ruokalista.js" defer></script>
     <link rel="stylesheet" href="../css/admin_css/ruokalista.css" />
-</head>
-<body>
+  </head>
+  <body>
     <header class="topbar">
-        <div class="topbar-inner">
-            <div class="brand">
-                <h1>NightWolf Admin</h1>
-                <p>Ravintolan hallintapaneeli</p>
-            </div>
-            <div class="userbox">
-                <span>Kirjautunut ylläpitäjänä</span>
-                <strong>Admin User</strong>
-            </div>
+      <div class="topbar-inner">
+        <div class="brand">
+          <h1>NightWolf Admin</h1>
+          <p>Ravintolan hallintapaneeli</p>
         </div>
+        <div class="userbox">
+          <span>Kirjautunut ylläpitäjänä</span>
+          <strong>Admin User</strong>
+        </div>
+      </div>
     </header>
 
     <nav class="nav">
-        <div class="nav-inner">
-            <a href="ruokalista.html" class="active">☰ Ruokalista</a>
-            <a href="tilaukset.html">⬚ Tilaukset</a>
-            <a href="tiedotteet.html">🔔 Tiedotteet</a>
-        </div>
+      <div class="nav-inner">
+        <a href="ruokalista.html" class="active">☰ Ruokalista</a>
+        <a href="tilaukset.html">⬚ Tilaukset</a>
+        <a href="tiedotteet.html">🔔 Tiedotteet</a>
+      </div>
     </nav>
 
     <main class="container">
-        <section class="page-head">
-            <div>
-                <h2>Ruokalistan hallinta</h2>
-                <p>Lisää, muokkaa ja poista ruokalajeja ja päiväteemoja</p>
-            </div>
-            <button class="primary-btn" id="addThemeBtn">+ Lisää uusi päiväteema</button>
-        </section>
-
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label>Suodata päivämäärällä:</label>
-                <input type="date" id="dateFilter" />
-                <button id="filterDateBtn" class="secondary-btn">Suodata</button>
-                <button id="showAllBtn" class="secondary-btn">Näytä kaikki</button>
-                <button id="showUpcomingBtn" class="secondary-btn">Vain tulevat</button>
-            </div>
+      <section class="page-head">
+        <div>
+          <h2>Ruokalistan hallinta</h2>
+          <p>Lisää, muokkaa ja poista ruokalajeja ja päiväteemoja</p>
         </div>
+        <button class="primary-btn" id="addThemeBtn">
+          + Lisää uusi päiväteema
+        </button>
+      </section>
 
-        <div id="daysContainer" class="days-container"></div>
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Suodata päivämäärällä:</label>
+          <input type="date" id="dateFilter" />
+          <button id="filterDateBtn" class="secondary-btn">Suodata</button>
+          <button id="showAllBtn" class="secondary-btn">Näytä kaikki</button>
+          <button id="showUpcomingBtn" class="secondary-btn">
+            Vain tulevat
+          </button>
+        </div>
+      </div>
+
+      <div id="daysContainer" class="days-container"></div>
     </main>
-</body>
+  </body>
 </html>
