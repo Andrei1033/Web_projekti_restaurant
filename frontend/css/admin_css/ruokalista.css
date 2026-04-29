@@ -464,6 +464,25 @@ textarea {
   font-size: 1.2rem;
 }
 
+/* Kuvan upload ja galleria tyylit */
+.image-upload-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.image-upload-container input {
+  flex: 1;
+  background: #f5f;
+}
+.gallery-item {
+  width: 100px;
+}
+img {
+  width: 100px;
+}
+
 /* RESPONSIVE */
 @media (max-width: 768px) {
   .menu-card {

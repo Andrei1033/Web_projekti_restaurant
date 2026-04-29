@@ -1,3 +1,5 @@
+// menuController.js
+
 import fs from 'fs';
 import path from 'path';
 import pool from '../../utils/database.js';
@@ -13,8 +15,7 @@ import {dirname} from 'path';
  * @param {string|null} filename  e.g. "1712345678_burger.jpg"
  * @returns {string|null}         e.g. "/uploads/menu/1712345678_burger.jpg"
  */
-const imageUrl = (filename) =>
-  filename ? `../../uploads/menu/${filename}` : null;
+const imageUrl = (filename) => (filename ? `/uploads/menu/${filename}` : null);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -147,7 +148,9 @@ const createDish = async (req, res) => {
       return res.status(400).json({error: 'price must be a positive number'});
     }
 
-    const img = req.file ? imageUrl(req.file.filename) : null;
+    const img = req.file
+      ? imageUrl(req.file.filename)
+      : req.body.current_dish_image || null;
 
     const [result] = await pool.query(
       `INSERT INTO dishes (name, description, price, current_dish_image, dietary_tags, is_active)
@@ -197,6 +200,13 @@ const updateDish = async (req, res) => {
     if (req.file) {
       deleteImageFile(old.current_dish_image);
       img = imageUrl(req.file.filename);
+    } else if (
+      req.body.current_dish_image !== undefined &&
+      req.body.current_dish_image !== old.current_dish_image
+    ) {
+      // Body may contain an image URL selected from gallery
+      if (old.current_dish_image) deleteImageFile(old.current_dish_image);
+      img = req.body.current_dish_image || null;
     }
 
     await pool.query(
@@ -510,7 +520,9 @@ const createDay = async (req, res) => {
       return res.status(400).json({error: 'date must be YYYY-MM-DD'});
     }
 
-    const img = req.file ? imageUrl(req.file.filename) : null;
+    const img = req.file
+      ? imageUrl(req.file.filename)
+      : req.body.theme_image || null;
 
     const [result] = await pool.query(
       `INSERT INTO daily_menus (date, day_name, theme_title, theme_image)
@@ -557,6 +569,12 @@ const updateDay = async (req, res) => {
     if (req.file) {
       deleteImageFile(old.theme_image);
       img = imageUrl(req.file.filename);
+    } else if (
+      req.body.theme_image !== undefined &&
+      req.body.theme_image !== old.theme_image
+    ) {
+      if (old.theme_image) deleteImageFile(old.theme_image);
+      img = req.body.theme_image || null;
     }
 
     await pool.query(
@@ -724,6 +742,60 @@ const uploadImage = (req, res) => {
   res.status(201).json({url: `/uploads/menu/${req.file.filename}`});
 };
 
+/**
+ * GET /api/uploads/gallery
+ * Returns list of all images in uploads/menu folder
+ */
+const getGalleryImages = async (req, res) => {
+  try {
+    // Tulosta absoluuttinen polku debuggausta varten
+    const uploadsDir = path.resolve(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'uploads',
+      'menu'
+    );
+    console.log('Resolved path:', uploadsDir);
+    console.log('Current __dirname:', __dirname);
+
+    const fullPath = path.join(__dirname, '..', '..', '..', 'uploads', 'menu');
+    console.log('Alternative path:', fullPath);
+
+    // Kokeile molempia polkuja
+    let targetDir = fullPath;
+    if (!fs.existsSync(targetDir)) {
+      targetDir = uploadsDir;
+      console.log('Trying alternative path:', targetDir);
+    }
+
+    if (!fs.existsSync(targetDir)) {
+      console.log('Directory does not exist:', targetDir);
+      return res.json([]);
+    }
+
+    const files = fs.readdirSync(targetDir);
+    console.log('All files in directory:', files);
+
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+    const images = files
+      .filter((file) => {
+        const ext = path.extname(file).toLowerCase();
+        const isImage = imageExtensions.includes(ext);
+        if (!isImage) console.log(`Skipping non-image: ${file}`);
+        return isImage;
+      })
+      .map((file) => `/uploads/menu/${file}`);
+
+    console.log(`Returning ${images.length} images`);
+    res.json(images);
+  } catch (err) {
+    console.error('Gallery error:', err);
+    res.status(500).json({error: 'Server error', details: err.message});
+  }
+};
+
 // ═══════════════════════════════════════════════════════════════
 //  EXPORTS
 // ═══════════════════════════════════════════════════════════════
@@ -745,4 +817,5 @@ export {
   removeDishFromDay,
   // Upload
   uploadImage,
+  getGalleryImages,
 };

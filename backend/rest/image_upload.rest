@@ -3,7 +3,7 @@ POST http://localhost:3000/api/uploads/image
 Content-Type: multipart/form-data; boundary=----NWBoundary
 
 ------NWBoundary
-Content-Disposition: form-data; name="image"; filename="testi.jpg"
+Content-Disposition: form-data; name="image"; filename="testinjnjjhj.jpg"
 Content-Type: image/jpeg
 
 < C:/Users/andre/Pictures/testi.jpg

@@ -8,7 +8,7 @@
  */
 
 import express from 'express';
-import {uploadImage} from '../controllers/menuController.js';
+import {uploadImage, getGalleryImages} from '../controllers/menuController.js';
 import auth from '../../middelwares/auth.js';
 import adminOnly from '../../middelwares/adminOnly.js';
 import {uploadSingle} from '../../middelwares/upload.js';
@@ -16,5 +16,6 @@ import {uploadSingle} from '../../middelwares/upload.js';
 const router = express.Router();
 
 router.post('/image', auth, adminOnly, uploadSingle, uploadImage);
+router.get('/gallery', auth, adminOnly, getGalleryImages);
 
 export default router;
