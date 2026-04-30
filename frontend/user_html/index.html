@@ -19,12 +19,10 @@
     <link rel="stylesheet" href="../css/user_css/modals.css" />
 
     <!-- Own JavaScript -->
+    <script src="../js/api.js" defer></script>
     <script src="../js/user_js/design.js" defer></script>
     <script src="../js/user_js/week_menue.js" defer></script>
     <script src="../js/user_js/modals.js" defer></script>
-    <script src="../js/admin_js/admin.js" defer></script>
-
-    <script src="../js/api.js" defer></script>
 
     <title>Night Wolf restaurant</title>
     <a href="../user_html/admin.html" class="btn btn--ghost">Admin</a>
@@ -78,6 +76,52 @@
     <p class="modal-footer-text">
       New hunter?
       <a id="register_button" href="#" class="red">Register here</a>
+    </p>
+  </div>
+
+  <!-- ADMIN LOGIN -->
+  <div id="admin-login-modal" class="modal-content hidden">
+    <button class="close-modal">&times;</button>
+
+    <h2 class="modal-title">ADMIN <span class="red">LOGIN</span></h2>
+
+    <form id="admin-login-form" class="modal-form">
+
+      <div class="input-group">
+        <label>Email</label>
+        <input
+          type="email"
+          id="admin-login-identifier"
+          placeholder="admin@night.fi"
+          required
+        />
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <input
+          type="password"
+          id="admin-login-password"
+          placeholder="••••••••"
+          required
+        />
+      </div>
+
+      <button type="submit" class="hero-cta" id="admin-login-submit-btn" style="width: 100%; margin-top: 20px">
+        Enter the Admin Den
+      </button>
+
+      <div style="text-align:center; margin: 12px 0; color: #aaa;">
+        OR
+      </div>
+      <button type="button" class="hero-cta" id="back-to-user-login" style="width: 100%; margin-top: 20px; background-color: #666;">
+        Back to User Login
+      </button>
+    </form>
+
+    <p class="modal-footer-text">
+      Don't have admin access?
+      <a id="user_login_link" href="#" class="red">Log in as user</a>
     </p>
   </div>
 
