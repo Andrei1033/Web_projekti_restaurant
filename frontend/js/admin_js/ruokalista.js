@@ -1,10 +1,30 @@
 const API_BASE = "http://localhost:3000/api";
 
+// ===== TOKEN HALLINTA =====
+
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+function checkAuth() {
+  const token = getToken();
+  if (!token) {
+    alert("Sinun täytyy kirjautua sisään!");
+    window.location.href = "../user_html/index.html"; // Muuta oikea polku kirjautumissivulle
+    return false;
+  }
+  return true;
+}
+
 // ===== APIN KUTSUT =====
 
 async function fetchAllMenuItems() {
   try {
-    const response = await fetch(`${API_BASE}/dishes`);
+    const response = await fetch(`${API_BASE}/dishes`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
     if (!response.ok) throw new Error("Failed to fetch menu");
     return await response.json();
   } catch (error) {
@@ -15,7 +35,11 @@ async function fetchAllMenuItems() {
 
 async function fetchMenuByDate(date) {
   try {
-    const response = await fetch(`${API_BASE}/menu/day?date=${date}`);
+    const response = await fetch(`${API_BASE}/menu/day?date=${date}`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    });
     if (!response.ok) throw new Error("Failed to fetch menu for date");
     return await response.json();
   } catch (error) {
@@ -38,16 +62,42 @@ async function saveDayTheme(date, themeTitle, themeImage = null) {
     ];
     const dayName = dayNames[dateObj.getUTCDay()];
 
-    const response = await fetch(`${API_BASE}/menu/days`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date: date,
-        day_name: dayName,
-        theme_title: themeTitle,
-        theme_image: themeImage,
-      }),
-    });
+    // Ensin tarkistetaan onko päivälle jo menu olemassa
+    const existingMenu = await fetchMenuByDate(date);
+
+    let response;
+    if (existingMenu && existingMenu.menu_id) {
+      // Päivitä olemassa olevaa - käytä PUT /api/menu/days/:id
+      response = await fetch(`${API_BASE}/menu/days/${existingMenu.menu_id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          date: date,
+          day_name: dayName,
+          theme_title: themeTitle,
+          theme_image: themeImage,
+        }),
+      });
+    } else {
+      // Luo uusi - käytä POST /api/menu/days
+      response = await fetch(`${API_BASE}/menu/days`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify({
+          date: date,
+          day_name: dayName,
+          theme_title: themeTitle,
+          theme_image: themeImage,
+        }),
+      });
+    }
+
     if (!response.ok) throw new Error("Failed to save theme");
     return await response.json();
   } catch (error) {
@@ -60,7 +110,10 @@ async function updateDayTheme(menuId, themeTitle, themeImage = null) {
   try {
     const response = await fetch(`${API_BASE}/menu/days/${menuId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
       body: JSON.stringify({
         theme_title: themeTitle,
         theme_image: themeImage,
@@ -78,7 +131,10 @@ async function addDish(dishData) {
   try {
     const response = await fetch(`${API_BASE}/dishes`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
       body: JSON.stringify(dishData),
     });
     if (!response.ok) throw new Error("Failed to add dish");
@@ -90,10 +146,15 @@ async function addDish(dishData) {
 }
 
 async function updateDish(dishId, dishData) {
+  if (!checkAuth()) return null;
+
   try {
     const response = await fetch(`${API_BASE}/dishes/${dishId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
       body: JSON.stringify(dishData),
     });
     if (!response.ok) throw new Error("Failed to update dish");
@@ -104,28 +165,42 @@ async function updateDish(dishId, dishData) {
   }
 }
 
-async function deleteDish(dishId) {
+async function deleteDishFromDay(menuId, dishId) {
+  if (!checkAuth()) return false;
+
   try {
-    const response = await fetch(`${API_BASE}/dishes/${dishId}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) throw new Error("Failed to delete dish");
+    const response = await fetch(
+      `${API_BASE}/menu/days/${menuId}/dishes/${dishId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      },
+    );
+    if (!response.ok) throw new Error("Failed to remove dish from day");
     return true;
   } catch (error) {
-    console.error("Error deleting dish:", error);
+    console.error("Error removing dish:", error);
     return false;
   }
 }
 
 async function deleteDayTheme(date) {
+  if (!checkAuth()) return false;
+
   try {
-    const response = await fetch(`${API_BASE}/menu/theme/${date}`, {
+    // Backendissä on DELETE /api/admin/menu/theme/:date
+    const response = await fetch(`${API_BASE}/admin/menu/theme/${date}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
     });
-    if (!response.ok) throw new Error("Failed to delete theme and dishes");
+    if (!response.ok) throw new Error("Failed to delete day");
     return true;
   } catch (error) {
-    console.error("Error deleting theme:", error);
+    console.error("Error deleting day:", error);
     return false;
   }
 }
@@ -133,6 +208,8 @@ async function deleteDayTheme(date) {
 // ===== KUVAN UPLOAD =====
 
 async function uploadImage(file) {
+  if (!checkAuth()) return null;
+
   const formData = new FormData();
   formData.append("image", file);
 
@@ -140,7 +217,7 @@ async function uploadImage(file) {
     const response = await fetch(`${API_BASE}/uploads/image`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        Authorization: `Bearer ${getToken()}`,
       },
       body: formData,
     });
@@ -158,10 +235,12 @@ async function uploadImage(file) {
 // ===== GALLERIA =====
 
 async function fetchGalleryImages() {
+  if (!checkAuth()) return [];
+
   try {
     const response = await fetch(`${API_BASE}/uploads/gallery`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+        Authorization: `Bearer ${getToken()}`,
       },
     });
     if (!response.ok) throw new Error("Failed to fetch gallery");
@@ -751,10 +830,15 @@ async function saveDish() {
 }
 
 async function addDishToMenu(menuId, dishId, sort_order = 0) {
+  if (!checkAuth()) return null;
+
   try {
     const response = await fetch(`${API_BASE}/menu/days/${menuId}/dishes`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken()}`,
+      },
       body: JSON.stringify({ dish_id: dishId, sort_order }),
     });
     if (!response.ok) throw new Error("Failed to add dish to day");
@@ -768,7 +852,13 @@ async function addDishToMenu(menuId, dishId, sort_order = 0) {
 async function deleteDishHandler(dishId, date) {
   if (!confirm("Haluatko varmasti poistaa tämän ruokalajin?")) return;
 
-  const success = await deleteDish(dishId);
+  const menuId = currentData[date]?.menu_id;
+  if (!menuId) {
+    alert("Virhe: päivää ei löydy!");
+    return;
+  }
+
+  const success = await deleteDishFromDay(menuId, dishId);
   if (success) {
     alert("Ruokalaji poistettu");
     await loadAndRender();
@@ -801,6 +891,10 @@ function filterByDate() {
 // ===== INIT =====
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (!checkAuth()) {
+    return;
+  }
+
   addModalHTML();
 
   document.getElementById("addThemeBtn")?.addEventListener("click", () => {

@@ -7,6 +7,7 @@ import {
   addDishToDay,
   createDay,
   deleteDay,
+  deleteDayTheme,
   getDayMenu,
   getWeekMenu,
   removeDishFromDay,
@@ -15,17 +16,17 @@ import {
 
 const router = express.Router();
 
-// 🌍 PUBLIC
+// PUBLIC
 router.get('/week', getWeekMenu);
 router.get('/day', getDayMenu);
 
-// 🔐 ADMIN
+// ADMIN
 router.use(authenticateToken, adminOnly);
 
-router.post('/days', updateDay, createDay);
+router.post('/days', uploadSingle, createDay);
 router.put('/days/:id', uploadSingle, updateDay);
 router.delete('/days/:id', deleteDay);
-//router.delete('/theme/:date', deleteDayTheme);
+router.delete('/admin/menu/theme/:date', deleteDayTheme);
 router.post('/days/:id/dishes', addDishToDay);
 router.delete('/days/:id/dishes/:dishId', removeDishFromDay);
 
