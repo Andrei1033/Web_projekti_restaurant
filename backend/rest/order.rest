@@ -1,0 +1,18 @@
+### Test checking availability
+GET http://localhost:3000/api/availability?date=2026-04-23&time=12:30&guests=2
+
+### Test creating a new order
+POST http://localhost:3000/api/orders
+Content-Type: application/json
+
+{
+  "guest_name": "Test User",
+  "guest_email": "test@test.fi",
+  "pickup_date": "2026-05-06",
+  "pickup_time": "12:30",
+  "guest_count": 2,
+  "items": [
+    { "dish_id": 2, "quantity": 2, "unit_price": 15.90 },
+    { "dish_id": 3, "quantity": 1, "unit_price": 5.00  }
+  ]
+}
