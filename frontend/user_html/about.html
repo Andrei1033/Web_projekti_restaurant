@@ -465,8 +465,34 @@
       </script>
     </main>
 
+<<<<<<< HEAD
     <footer class="simple-footer">
       <p>&copy; 2024 Night Wolf Kitchen. All rights reserved.</p>
     </footer>
   </body>
+=======
+               logo.style.cursor = 'pointer';
+               logo.title = ' ';
+
+               logo.addEventListener('click', function(){
+                  clicks++;
+                  if(timer) clearTimeout(timer);
+                  timer = setTimeout(reset, windowMs);
+                  if(clicks >= required){
+                     reset();
+                     // Open the secret admin page
+                     window.location.href = '../admin_html/ruokalista.html';
+                  }
+               });
+            })();
+         </script>
+
+      </main>
+
+      <footer class="simple-footer">
+         <p>&copy; 2024 Night Wolf Kitchen. All rights reserved.</p>
+      </footer>
+
+   </body>
+>>>>>>> 04591f1cc63ac96e92b31ebe34bc23a5af99ec7f
 </html>

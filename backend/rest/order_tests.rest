@@ -1,0 +1,188 @@
+# NightWolf — Order & Availability REST Tests
+# VS Code: REST Client extension (Huachao Mao)
+# Aja järjestyksessä ylhäältä alas
+
+@base = http://localhost:3000
+
+# ═══════════════════════════════════════════════════════════════
+# VAIHE 1 — Saatavuus (ei vaadi kirjautumista)
+# ═══════════════════════════════════════════════════════════════
+
+### 1a. Tarkista saatavuus — pitäisi palauttaa freeSeats
+GET {{base}}/api/availability?date=2026-04-23&time=12:30&guests=2
+
+###
+
+### 1b. Liian monta vierasta — pitäisi palauttaa available: false
+GET {{base}}/api/availability?date=2026-04-23&time=12:30&guests=50
+
+###
+
+### 1c. Puuttuva date → pitäisi palauttaa 400
+GET {{base}}/api/availability?time=12:30&guests=2
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# VAIHE 2 — Tee tilaus vieraana (ei kirjautumista)
+# Vaihda dish_id oikeaan ID:hen joka löytyy dishes-taulusta
+# ═══════════════════════════════════════════════════════════════
+
+### 2a. Onnistunut vierastilaus
+# Kopioi vastauksesta "id" → käytä sitä myöhemmin tilauksen hakuun
+POST {{base}}/api/orders
+Content-Type: application/json
+
+{
+  "guest_name":  "Testi Käyttäjä",
+  "guest_email": "testi@nightwolf.fi",
+  "pickup_date": "2026-04-23",
+  "pickup_time": "12:30",
+  "guest_count": 2,
+  "notes":       "Ei sipulia",
+  "items": [
+    { "dish_id": 26, "quantity": 2, "unit_price": 15.90 },
+    { "dish_id": 27, "quantity": 1, "unit_price": 5.00  }
+  ]
+}
+
+###
+
+### 2b. Tee toinen tilaus samalle ajalle — freeSeats pienenee
+POST {{base}}/api/orders
+Content-Type: application/json
+
+{
+  "guest_name":  "Toinen Asiakas",
+  "guest_email": "toinen@test.fi",
+  "pickup_date": "2026-04-23",
+  "pickup_time": "12:30",
+  "guest_count": 3,
+  "items": [
+    { "dish_id": 26, "quantity": 1, "unit_price": 15.90 }
+  ]
+}
+
+###
+
+### 2c. Tarkista saatavuus uudelleen — freeSeats pitäisi olla pienempi nyt
+GET {{base}}/api/availability?date=2026-04-23&time=12:30&guests=2
+
+###
+
+### 2d. Puuttuva guest_name → pitäisi palauttaa 400
+POST {{base}}/api/orders
+Content-Type: application/json
+
+{
+  "guest_email": "testi@test.fi",
+  "pickup_date": "2026-04-23",
+  "pickup_time": "12:30",
+  "guest_count": 1,
+  "items": [
+    { "dish_id": 1, "quantity": 1, "unit_price": 15.90 }
+  ]
+}
+
+###
+
+### 2e. Tyhjä items-taulukko → pitäisi palauttaa 400
+POST {{base}}/api/orders
+Content-Type: application/json
+
+{
+  "guest_name":  "Test",
+  "guest_email": "test@test.fi",
+  "pickup_date": "2026-04-23",
+  "pickup_time": "12:30",
+  "guest_count": 1,
+  "items": []
+}
+
+###
+
+### 2f. 41 vierasta (yli max) → pitäisi palauttaa 409
+POST {{base}}/api/orders
+Content-Type: application/json
+
+{
+  "guest_name":  "Iso Porukka",
+  "guest_email": "iso@test.fi",
+  "pickup_date": "2026-04-23",
+  "pickup_time": "14:00",
+  "guest_count": 41,
+  "items": [
+    { "dish_id": 1, "quantity": 1, "unit_price": 15.90 }
+  ]
+}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# VAIHE 3 — Hae tilaus (vaatii tilauksesta saadun ID:n)
+# Vaihda /1 oikeaan ID:hen jonka sait vaiheesta 2a
+# ═══════════════════════════════════════════════════════════════
+
+### 3a. Hae tilaus ID:llä
+GET {{base}}/api/orders/1
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# VAIHE 4 — Admin-toiminnot
+# Vaihda tilauksen ID tarvittaessa
+# ═══════════════════════════════════════════════════════════════
+
+### 4a. Hae kaikki tilaukset
+GET {{base}}/api/orders/admin/all
+
+###
+
+### 4b. Suodata tietyn päivän tilaukset
+GET {{base}}/api/orders/admin/all?date=2026-04-23
+
+###
+
+### 4c. Suodata statuksen mukaan
+GET {{base}}/api/orders/admin/all?status=pending
+
+###
+
+### 4d. Dashboard-tilastot
+GET {{base}}/api/orders/admin/dashboard
+
+###
+
+### 4e. Päivitä tilauksen status: pending → confirmed
+PATCH {{base}}/api/orders/1/status
+Content-Type: application/json
+
+{ "status": "confirmed" }
+
+###
+
+### 4f. Päivitä status: confirmed → ready
+PATCH {{base}}/api/orders/1/status
+Content-Type: application/json
+
+{ "status": "ready" }
+
+###
+
+### 4g. Väärä status → pitäisi palauttaa 400
+PATCH {{base}}/api/orders/1/status
+Content-Type: application/json
+
+{ "status": "valmis" }
+
+###
+
+### 4h. Peruuta tilaus — poistaa myös reservation (vapauttaa paikat)
+DELETE {{base}}/api/orders/1
+
+###
+
+### 4i. Tarkista saatavuus peruutuksen jälkeen — freeSeats kasvaa takaisin
+GET {{base}}/api/availability?date=2026-04-23&time=12:30&guests=2
+
+###

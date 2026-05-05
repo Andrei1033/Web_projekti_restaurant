@@ -13,25 +13,22 @@
  *   const items = await fetch(`/api/menu/day?date=YYYY-MM-DD`).then(r => r.json());
  */
 
-"use strict";
+// ── Config
+const API_BASE = "http://localhost:3000";
 
-/* ── Config ────────────────────────────────────────────────── */
-const API_BASE = "http://localhost:3000/api";
-
-/* ── Diet tag config ── */
+// ── Diet tags ──
 const DIET_LABELS = {
   vegan: { label: "Vegan", css: "tag-vegan" },
   glutenfree: { label: "Gluten-free", css: "tag-gluten" },
   lactosefree: { label: "Lactose-free", css: "tag-lactose" },
 };
 
-/* ── Helpers ── */
-
+// ── Helpers ──
 function toDateKey(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function fmtDate(date) {
@@ -40,6 +37,21 @@ function fmtDate(date) {
     month: "short",
     year: "numeric",
   });
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function getImageUrl(path) {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return `${API_BASE}/${path.replace(/^\/+/, "")}`;
 }
 
 const DAY_NAMES = [
@@ -52,80 +64,77 @@ const DAY_NAMES = [
   "Saturday",
 ];
 
-/**
- * Fetch menu for specific date from API
- * @param {string} date - "YYYY-MM-DD"
- * @returns {Promise<Object>} - Menu data
- */
-async function fetchDayMenu(date) {
-  try {
-    const response = await fetch(`${API_BASE}/menu/day?date=${date}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching day menu:", error);
-    return null;
-  }
-}
-
-/**
- * Get image URL
- */
-function getImageUrl(imagePath) {
-  if (!imagePath) return null;
-  if (imagePath.startsWith("http")) return imagePath;
-
-  // Poistetaan mahdollinen etutavu ja varmistetaan että polku on oikein
-  const cleanPath = imagePath.replace(/^\/+/, ""); // Poista alusta olevat /
-
-  // Käytetään staattista base URL:ia (ilman /api)
-  return `http://localhost:3000/${cleanPath}`;
-}
-
-/* ── State ── */
+// ── State ──
 const TODAY = new Date();
 TODAY.setHours(0, 0, 0, 0);
 
 let currentDate = new Date(TODAY);
-let cart = {};
+let cart = {}; // { dishId: { item, qty } }
 
-/* ── DOM refs ── */
-const grid = document.getElementById("order-menu-list");
-const displayName = document.getElementById("display-day-name");
-const displayDate = document.getElementById("display-date");
-const todayPill = document.getElementById("order-today-pill");
-const summaryBar = document.getElementById("order-summary-bar");
-const osbCount = document.getElementById("osb-item-count");
-const osbTotal = document.getElementById("osb-total");
-const checkoutBtn = document.getElementById("osb-checkout-btn");
-
-/* ── Render day ── */
-async function renderDay(date) {
-  const key = toDateKey(date);
-  const isToday = key === toDateKey(TODAY);
-
-  // Update header labels
-  displayName.textContent = DAY_NAMES[date.getDay()].toUpperCase();
-  displayDate.textContent = fmtDate(date);
-  todayPill.classList.toggle("hidden", !isToday);
-
-  // Show loading state
-  grid.classList.add("fading");
-  grid.innerHTML = '<div class="loading-spinner">Loading menu...</div>';
-
+// ── API ──
+async function fetchDayMenu(dateStr) {
   try {
-    // Fetch real data from API
-    const menuData = await fetchDayMenu(key);
+    const res = await fetch(`${API_BASE}/api/menu/day?date=${dateStr}`);
+    if (!res.ok) throw new Error(`${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.error("fetchDayMenu:", err);
+    return null;
+  }
+}
 
+async function submitOrder(payload) {
+  try {
+    const token = localStorage.getItem("nw_token");
+    const res = await fetch(`${API_BASE}/api/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `${res.status}`);
+    return { ok: true, order: data };
+  } catch (err) {
+    console.error("submitOrder:", err);
+    return { ok: false, error: err.message };
+  }
+}
+
+//══════════════════════════════════════════════════════════════
+//All DOM logic inside DOMContentLoaded
+//══════════════════════════════════════════════════════════════
+document.addEventListener("DOMContentLoaded", () => {
+  const grid = document.getElementById("order-menu-list");
+  const displayName = document.getElementById("display-day-name");
+  const displayDate = document.getElementById("display-date");
+  const todayPill = document.getElementById("order-today-pill");
+  const summaryBar = document.getElementById("order-summary-bar");
+  const osbCount = document.getElementById("osb-item-count");
+  const osbTotal = document.getElementById("osb-total");
+  const checkoutBtn = document.getElementById("osb-checkout-btn");
+
+  // ── Render day
+  async function renderDay(date) {
+    const key = toDateKey(date);
+    const isToday = key === toDateKey(TODAY);
+
+    displayName.textContent = DAY_NAMES[date.getDay()].toUpperCase();
+    displayDate.textContent = fmtDate(date);
+    todayPill?.classList.toggle("hidden", !isToday);
+
+    grid.innerHTML = `<div class="order-empty-state">
+      <span class="empty-wolf">🐺</span><h3>Loading…</h3></div>`;
+
+    const data = await fetchDayMenu(key);
+    const items = data?.dishes || [];
+
+    grid.classList.add("fading");
     setTimeout(() => {
       grid.innerHTML = "";
-
-      if (!menuData || !menuData.dishes || menuData.dishes.length === 0) {
+      if (items.length === 0) {
         grid.innerHTML = `
           <div class="order-empty-state">
             <span class="empty-wolf">🐺</span>
@@ -133,275 +142,242 @@ async function renderDay(date) {
             <p>The kitchen is still planning this day's theme.<br>Check back soon!</p>
           </div>`;
       } else {
-        // Transform API dishes to format needed for display
-        const items = menuData.dishes.map((dish) => ({
-          id: dish.id,
-          name: dish.name,
-          desc: dish.description || "Delicious dish prepared with care",
-          price: parseFloat(dish.price),
-          img: getImageUrl(dish.current_dish_image),
-          diet: dish.dietary_tags ? dish.dietary_tags.split(",") : [],
-        }));
-
-        items.forEach((item, i) => {
-          const card = buildItemCard(item, i);
-          grid.appendChild(card);
+        items.forEach((dish, i) => {
+          // Normalize dish → item shape
+          const item = {
+            id: dish.id,
+            name: dish.name,
+            desc: dish.description || "",
+            price: parseFloat(dish.price),
+            img: getImageUrl(dish.current_dish_image || dish.image_url),
+            diet: dish.dietary_tags
+              ? dish.dietary_tags.split(",").map((t) => t.trim())
+              : [],
+          };
+          grid.appendChild(buildItemCard(item, i));
         });
       }
-
       grid.classList.remove("fading");
     }, 180);
-  } catch (error) {
-    console.error("Error rendering day:", error);
-    grid.innerHTML = `
-      <div class="order-empty-state">
-        <span class="empty-wolf">⚠️</span>
-        <h3>Error loading menu</h3>
-        <p>Failed to load menu. Please try again later.</p>
-      </div>`;
-    grid.classList.remove("fading");
   }
-}
 
-/* ── Build a single menu item card ── */
-function buildItemCard(item, index) {
-  const card = document.createElement("div");
-  card.className = "order-item-card";
-  card.style.animationDelay = `${index * 60}ms`;
+  // ── Item card
+  function buildItemCard(item, index) {
+    const card = document.createElement("div");
+    card.className = "order-item-card";
+    card.style.animationDelay = `${index * 60}ms`;
 
-  const tagsHTML =
-    item.diet && item.diet.length
-      ? item.diet
-          .map((d) => {
-            const t = DIET_LABELS[d.trim()];
-            return t ? `<span class="tag ${t.css}">${t.label}</span>` : "";
-          })
-          .join("")
-      : "";
+    const tagsHTML = item.diet
+      .map((d) =>
+        DIET_LABELS[d]
+          ? `<span class="tag ${DIET_LABELS[d].css}">${DIET_LABELS[d].label}</span>`
+          : "",
+      )
+      .join("");
 
-  const currentQty = cart[item.id]?.qty || 0;
-
-  card.innerHTML = `
-    <div class="order-item-img${item.img ? "" : " no-img"}">
-      ${
-        item.img
-          ? `<img src="${item.img}" alt="${item.name}"
-               onerror="this.parentElement.classList.add('no-img'); this.remove();">`
-          : '<div class="placeholder-img"></div>'
-      }
-    </div>
-    <div class="order-item-body">
-      <div class="item-header">
-        <span class="item-name">${escapeHtml(item.name)}</span>
-        <span class="item-price">${item.price.toFixed(2)} €</span>
+    card.innerHTML = `
+      <div class="order-item-img${item.img ? "" : " no-img"}">
+        ${
+          item.img
+            ? `<img src="${item.img}" alt="${escapeHtml(item.name)}"
+               onerror="this.parentElement.classList.add('no-img');this.remove();">`
+            : ""
+        }
       </div>
-      <p class="item-desc">${escapeHtml(item.desc)}</p>
-      ${tagsHTML ? `<div class="diet-tags">${tagsHTML}</div>` : ""}
-      <div class="item-actions">
-        <div class="qty-control" data-id="${item.id}">
-          <button class="qty-btn qty-minus" aria-label="Decrease quantity">−</button>
-          <span class="qty-value">${currentQty}</span>
-          <button class="qty-btn qty-plus" aria-label="Increase quantity">+</button>
+      <div class="order-item-body">
+        <div class="item-header">
+          <span class="item-name">${escapeHtml(item.name)}</span>
+          <span class="item-price">${item.price.toFixed(2)} €</span>
         </div>
-        <button class="add-to-cart-btn" data-id="${item.id}">
-          Add to cart
-        </button>
-      </div>
-    </div>
-  `;
+        <p class="item-desc">${escapeHtml(item.desc)}</p>
+        ${tagsHTML ? `<div class="diet-tags">${tagsHTML}</div>` : ""}
+        <div class="item-actions">
+          <div class="qty-control">
+            <button class="qty-btn qty-minus" aria-label="Decrease">−</button>
+            <span class="qty-value">1</span>
+            <button class="qty-btn qty-plus"  aria-label="Increase">+</button>
+          </div>
+          <button class="add-to-cart-btn">Add to cart</button>
+        </div>
+      </div>`;
 
-  let localQty = currentQty;
-  const qtyDisplay = card.querySelector(".qty-value");
-  const addBtn = card.querySelector(".add-to-cart-btn");
+    const qtyDisplay = card.querySelector(".qty-value");
+    const addBtn = card.querySelector(".add-to-cart-btn");
+    let localQty = 1;
 
-  card.querySelector(".qty-minus").addEventListener("click", () => {
-    if (localQty > 1) {
-      localQty--;
+    card.querySelector(".qty-minus").addEventListener("click", () => {
+      if (localQty > 1) {
+        localQty--;
+        qtyDisplay.textContent = localQty;
+      }
+    });
+    card.querySelector(".qty-plus").addEventListener("click", () => {
+      localQty++;
       qtyDisplay.textContent = localQty;
-    }
-  });
+    });
+    addBtn.addEventListener("click", () => {
+      addToCart(item, localQty);
+      addBtn.textContent = "Added!";
+      addBtn.classList.add("added");
+      setTimeout(() => {
+        addBtn.textContent = "Add to cart";
+        addBtn.classList.remove("added");
+      }, 1400);
+      localQty = 1;
+      qtyDisplay.textContent = 1;
+    });
 
-  card.querySelector(".qty-plus").addEventListener("click", () => {
-    localQty++;
-    qtyDisplay.textContent = localQty;
-  });
-
-  addBtn.addEventListener("click", () => {
-    const qty = Math.max(localQty, 1);
-    addToCart(item, qty);
-    addBtn.textContent = "Added!";
-    addBtn.classList.add("added");
-    setTimeout(() => {
-      addBtn.textContent = "Add to cart";
-      addBtn.classList.remove("added");
-    }, 1400);
-    localQty = 1;
-    qtyDisplay.textContent = 1;
-  });
-
-  return card;
-}
-
-/* ── Cart logic ── */
-function addToCart(item, qty) {
-  if (cart[item.id]) {
-    cart[item.id].qty += qty;
-  } else {
-    cart[item.id] = { item, qty };
+    return card;
   }
-  updateSummaryBar();
-}
 
-function updateSummaryBar() {
-  const totalQty = Object.values(cart).reduce((s, e) => s + e.qty, 0);
-  const totalPrice = Object.values(cart).reduce(
-    (s, e) => s + e.item.price * e.qty,
-    0,
-  );
+  // ── Cart ──
+  function addToCart(item, qty) {
+    if (cart[item.id]) cart[item.id].qty += qty;
+    else cart[item.id] = { item, qty };
+    updateSummaryBar();
+  }
 
-  osbCount.textContent = `${totalQty} item${totalQty !== 1 ? "s" : ""}`;
-  osbTotal.textContent = `${totalPrice.toFixed(2)} €`;
+  function updateSummaryBar() {
+    const totalQty = Object.values(cart).reduce((s, e) => s + e.qty, 0);
+    const totalPrice = Object.values(cart).reduce(
+      (s, e) => s + e.item.price * e.qty,
+      0,
+    );
+    osbCount.textContent = `${totalQty} item${totalQty !== 1 ? "s" : ""}`;
+    osbTotal.textContent = `${totalPrice.toFixed(2)} €`;
+    const hasItems = totalQty > 0;
+    summaryBar?.classList.toggle("visible", hasItems);
+    if (checkoutBtn) checkoutBtn.disabled = !hasItems;
+  }
 
-  const hasItems = totalQty > 0;
-  summaryBar.classList.toggle("visible", hasItems);
-  checkoutBtn.disabled = !hasItems;
-}
+  // Open checkout modal
+  function openCheckoutModal() {
+    const summary = document.getElementById("checkout-summary");
+    const totalEl = document.getElementById("checkout-total-price");
+    const overlay = document.getElementById("modal-overlay");
+    const modal = document.getElementById("checkout-modal");
+    if (!summary || !modal || !overlay) return;
 
-/* ── Helper to escape HTML ── */
-function escapeHtml(str) {
-  if (!str) return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
+    // Populate order rows
+    summary.innerHTML = "";
+    let total = 0;
+    Object.values(cart).forEach(({ item, qty }) => {
+      const line = item.price * qty;
+      total += line;
+      const row = document.createElement("div");
+      row.className = "checkout-summary-row";
+      row.innerHTML = `
+        <span class="csr-name">${escapeHtml(item.name)}</span>
+        <span class="csr-qty">×${qty}</span>
+        <span class="csr-price">${line.toFixed(2)} €</span>`;
+      summary.appendChild(row);
+    });
+    if (totalEl) totalEl.textContent = `${total.toFixed(2)} €`;
 
-/* ── Checkout modal population ── */
-function openCheckoutModal() {
-  const summary = document.getElementById("checkout-summary");
-  const totalEl = document.getElementById("checkout-total-price");
-  const overlay = document.getElementById("modal-overlay");
-  const modal = document.getElementById("checkout-modal");
+    // Tell checkout.js which date we're ordering for
+    // checkout.js listens for this and fills time slots + checks availability
+    if (typeof window.prepareCheckout === "function") {
+      window.prepareCheckout(currentDate);
+    }
 
-  if (!summary || !modal) return;
+    // Open modal — use modals.js if available, otherwise manual
+    if (typeof window.openModal === "function") {
+      window.openModal("checkout-modal");
+    } else {
+      overlay.classList.remove("hidden");
+      modal.classList.remove("hidden");
+    }
+  }
 
-  summary.innerHTML = "";
-  let total = 0;
-
-  Object.values(cart).forEach(({ item, qty }) => {
-    const lineTotal = item.price * qty;
-    total += lineTotal;
-    const row = document.createElement("div");
-    row.className = "checkout-summary-row";
-    row.innerHTML = `
-      <span class="csr-name">${escapeHtml(item.name)}</span>
-      <span class="csr-qty">×${qty}</span>
-      <span class="csr-price">${lineTotal.toFixed(2)} €</span>
-    `;
-    summary.appendChild(row);
-  });
-
-  totalEl.textContent = `${total.toFixed(2)} €`;
-  overlay.classList.remove("hidden");
-  modal.classList.remove("hidden");
-}
-
-/* ── Checkout form submit ── */
-async function setupCheckoutForm() {
+  // ── Checkout form submit ──
   const form = document.getElementById("checkout-form");
-  if (!form) return;
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.getElementById("co-name").value.trim();
-    const surname = document.getElementById("co-lastname").value.trim();
-    const email = document.getElementById("co-email").value.trim();
+      // Fields from checkout modal
+      const name = document.getElementById("co-name")?.value.trim();
+      const surname = document.getElementById("co-lastname")?.value.trim();
+      const email = document.getElementById("co-email")?.value.trim();
+      const time = document.getElementById("co-time")?.value;
+      const guestCount = parseInt(
+        document.getElementById("co-guests-value")?.textContent || "1",
+        10,
+      );
 
-    if (!name || !surname || !email) return;
+      if (!name || !surname || !email || !time) {
+        alert("Please fill in all required fields and select a pickup time.");
+        return;
+      }
 
-    const orderData = {
-      guest_name: `${name} ${surname}`,
-      guest_email: email,
-      pickup_date: toDateKey(currentDate),
-      items: Object.values(cart).map(({ item, qty }) => ({
-        dish_id: item.id,
-        quantity: qty,
-        unit_price: item.price,
-      })),
-    };
+      const submitBtn = document.getElementById("co-submit-btn");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Placing order…";
+      }
 
-    try {
-      const response = await fetch(`${API_BASE}/orders`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
+      // Build payload — all items must be from currentDate
+      const payload = {
+        guest_name: `${name} ${surname}`,
+        guest_email: email,
+        pickup_date: toDateKey(currentDate),
+        pickup_time: time,
+        guest_count: guestCount,
+        items: Object.values(cart).map(({ item, qty }) => ({
+          dish_id: item.id,
+          quantity: qty,
+          unit_price: item.price,
+        })),
+      };
+
+      const result = await submitOrder(payload);
+
+      if (result.ok) {
+        // Clear cart
+        cart = {};
+        updateSummaryBar();
+
+        // Close modal
+        if (typeof window.closeModal === "function") {
+          window.closeModal();
+        } else {
+          document.getElementById("modal-overlay")?.classList.add("hidden");
+          document.getElementById("checkout-modal")?.classList.add("hidden");
+        }
+        form.reset();
+        alert(
+          `Thank you, ${name}! Order #${result.order.id} confirmed.\nConfirmation sent to ${email}.`,
+        );
+      } else {
+        alert(`Order failed: ${result.error}`);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Place Order";
+        }
+      }
+    });
+
+    document
+      .getElementById("checkout-register-link")
+      ?.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (typeof window.openModal === "function")
+          window.openModal("register-modal");
       });
+  }
 
-      if (!response.ok) throw new Error("Order submission failed");
-
+  // ----- Day navigation
+  function changeDay(direction) {
+    // Clear cart when changing day — can't mix days in one order
+    if (Object.keys(cart).length > 0) {
+      const ok = confirm("Changing the day will clear your cart. Continue?");
+      if (!ok) return;
       cart = {};
       updateSummaryBar();
-      document.getElementById("modal-overlay").classList.add("hidden");
-      document.getElementById("checkout-modal").classList.add("hidden");
-      form.reset();
-
-      alert(
-        `Thank you, ${name}! Your order has been received. Confirmation sent to ${email}.`,
-      );
-    } catch (error) {
-      console.error("Error placing order:", error);
-      alert("Sorry, there was an error placing your order. Please try again.");
     }
-  });
-
-  const regLink = document.getElementById("checkout-register-link");
-  if (regLink) {
-    regLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      document.getElementById("checkout-modal").classList.add("hidden");
-      document.getElementById("register-modal")?.classList.remove("hidden");
-    });
+    currentDate.setDate(currentDate.getDate() + direction);
+    renderDay(currentDate);
   }
-}
-
-/* ── Day navigation ── */
-function changeDay(direction) {
-  currentDate.setDate(currentDate.getDate() + direction);
-  renderDay(currentDate);
-}
-
-/* ── Init ── */
-document.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(window.location.search);
-  const dateParam = params.get("date");
-
-  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-    currentDate = new Date(dateParam);
-    currentDate.setHours(0, 0, 0, 0);
-  } else {
-    const dayParam = params.get("day");
-    const weekParam = params.get("week");
-    if (dayParam && weekParam) {
-      const [yearStr, wStr] = weekParam.split("-W");
-      const year = parseInt(yearStr, 10);
-      const weekNum = parseInt(wStr, 10);
-      const jan4 = new Date(year, 0, 4);
-      const monday = new Date(jan4);
-      monday.setDate(
-        jan4.getDate() - ((jan4.getDay() + 6) % 7) + (weekNum - 1) * 7,
-      );
-      const dayOffset = ["mon", "tue", "wed", "thu", "fri"].indexOf(dayParam);
-      if (dayOffset >= 0) {
-        currentDate = new Date(monday);
-        currentDate.setDate(monday.getDate() + dayOffset);
-        currentDate.setHours(0, 0, 0, 0);
-      }
-    }
-  }
-
-  renderDay(currentDate);
 
   document
     .getElementById("prev-day")
@@ -409,7 +385,15 @@ document.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("next-day")
     ?.addEventListener("click", () => changeDay(+1));
-
   checkoutBtn?.addEventListener("click", openCheckoutModal);
-  setupCheckoutForm();
+
+  // ── URL params → jump to date
+  const params = new URLSearchParams(window.location.search);
+  const dateParam = params.get("date");
+
+  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    currentDate = new Date(dateParam + "T00:00:00");
+  }
+
+  renderDay(currentDate);
 });

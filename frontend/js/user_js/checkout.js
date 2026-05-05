@@ -1,282 +1,225 @@
 /**
- * NightWolf Kitchen — Checkout Module
+ * checkout.js
+ * - Fills pickup time slots based on opening hours
+ * - Calls GET /api/availability for real seat counts
+ * - Enables Place Order only when all fields valid + seats available
  *
- * Handles:
- *  - Generating pickup time slots for the selected day
- *  - Guest count selector (1–MAX_CAPACITY)
- *  - Availability check (simulated frontend — replace with real API later)
- *  - Submit button state (disabled until all fields valid + seats available)
- *
- * LATER — replace simulateAvailability() with:
- *   const data = await fetch(`/api/availability?date=YYYY-MM-DD&time=HH:MM&guests=N`).then(r=>r.json());
- *
- * Load AFTER modals.js and order.js:
- *   <script src="../js/user_js/checkout.js" defer></script>
+ * window.prepareCheckout(date) is called by order.js before opening modal.
  */
 
-'use strict';
+const CHECKOUT_API = "http://localhost:3000";
 
-/* ── Config ────────────────────────────────────────────────── */
-
-/** Restaurant opening hours per weekday (0=Sun … 6=Sat) */
 const OPENING_HOURS = {
-  0: null,               // Sunday — closed
-  1: { open: '11:00', close: '22:00' }, // Monday
-  2: { open: '11:00', close: '22:00' },
-  3: { open: '11:00', close: '22:00' },
-  4: { open: '11:00', close: '22:00' },
-  5: { open: '11:00', close: '22:00' }, // Friday
-  6: { open: '12:00', close: '23:00' }, // Saturday
+  0: null,
+  1: { open: "11:00", close: "22:00" },
+  2: { open: "11:00", close: "22:00" },
+  3: { open: "11:00", close: "22:00" },
+  4: { open: "11:00", close: "22:00" },
+  5: { open: "11:00", close: "22:00" },
+  6: { open: "12:00", close: "23:00" },
 };
 
-/** Slot interval in minutes */
 const SLOT_INTERVAL = 30;
+const LAST_OFFSET = 30;
+const MIN_ADVANCE = 15;
 
-/** Last slot is this many minutes before closing */
-const LAST_SLOT_OFFSET = 30;
-
-/** Maximum seats in the restaurant */
-const MAX_CAPACITY = 40;
-
-/** Minimum advance booking in minutes (can't book current minute) */
-const MIN_ADVANCE_MINUTES = 15;
-
-/* ── Simulated availability data ──────────────────────────────
- * Keys: "YYYY-MM-DD HH:MM" → seats already booked
- * REPLACE THIS with a real API call when backend is ready.
- * ─────────────────────────────────────────────────────────── */
-const BOOKED_SEATS = {
-  // Example: heavily booked lunch slots
-  [`${todayKey()} 12:00`]: 35,
-  [`${todayKey()} 12:30`]: 38,
-  [`${todayKey()} 13:00`]: 30,
-  [`${todayKey()} 13:30`]: 22,
-  [`${todayKey()} 19:00`]: 40, // fully booked
-  [`${todayKey()} 19:30`]: 37,
-};
-
-/** Returns "YYYY-MM-DD" for today */
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+function toDateStr(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
-/** Returns "YYYY-MM-DD" for any Date */
-function dateKey(date) {
-  return date.toISOString().slice(0, 10);
-}
-
-/* ── Time slot generator ──────────────────────────────────── */
-
-/**
- * Generates an array of "HH:MM" time slot strings for a given date.
- * Skips past slots (with MIN_ADVANCE_MINUTES buffer for today).
- * Returns [] if restaurant is closed that day.
- *
- * @param {Date} date
- * @returns {string[]}
- */
-function generateTimeSlots(date) {
+function generateSlots(date) {
   const hours = OPENING_HOURS[date.getDay()];
-  if (!hours) return []; // closed
+  if (!hours) return [];
 
-  const [openH, openM]   = hours.open.split(':').map(Number);
-  const [closeH, closeM] = hours.close.split(':').map(Number);
-
-  const openMinutes  = openH  * 60 + openM;
-  const closeMinutes = closeH * 60 + closeM - LAST_SLOT_OFFSET;
+  const [oH, oM] = hours.open.split(":").map(Number);
+  const [cH, cM] = hours.close.split(":").map(Number);
+  const openMin = oH * 60 + oM;
+  const closeMin = cH * 60 + cM - LAST_OFFSET;
 
   const now = new Date();
-  const isToday = dateKey(date) === dateKey(now);
-  const nowMinutes = isToday
-    ? now.getHours() * 60 + now.getMinutes() + MIN_ADVANCE_MINUTES
+  const isToday = toDateStr(date) === toDateStr(now);
+  const nowMin = isToday
+    ? now.getHours() * 60 + now.getMinutes() + MIN_ADVANCE
     : 0;
 
   const slots = [];
-  for (let m = openMinutes; m <= closeMinutes; m += SLOT_INTERVAL) {
-    if (m < nowMinutes) continue; // past slot
-    const hh = String(Math.floor(m / 60)).padStart(2, '0');
-    const mm = String(m % 60).padStart(2, '0');
+  for (let m = openMin; m <= closeMin; m += SLOT_INTERVAL) {
+    if (m < nowMin) continue;
+    const hh = String(Math.floor(m / 60)).padStart(2, "0");
+    const mm = String(m % 60).padStart(2, "0");
     slots.push(`${hh}:${mm}`);
   }
   return slots;
 }
 
-/* ── Availability check ───────────────────────────────────── */
-
-/**
- * Returns available seats for a given date+time slot.
- * REPLACE body with real API call when backend is ready.
- *
- * @param {Date}   date
- * @param {string} timeSlot  "HH:MM"
- * @returns {number}  seats available (0 = fully booked)
- */
-function getAvailableSeats(date, timeSlot) {
-  const key = `${dateKey(date)} ${timeSlot}`;
-  const booked = BOOKED_SEATS[key] || 0;
-  return Math.max(0, MAX_CAPACITY - booked);
+/* ── Real API call ── */
+async function checkAvailabilityAPI(date, time, guests) {
+  try {
+    const res = await fetch(
+      `${CHECKOUT_API}/api/availability?date=${date}&time=${time}&guests=${guests}`,
+    );
+    if (!res.ok) throw new Error(`${res.status}`);
+    return await res.json();
+    // { available, freeSeats, bookedSeats, totalCapacity, requestedGuests }
+  } catch (err) {
+    console.error("checkAvailabilityAPI:", err);
+    return null;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   UI — runs after DOM is ready
+   UI
    ══════════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
+  const timeSelect = document.getElementById("co-time");
+  const timeHint = document.getElementById("co-time-hint");
+  const guestsValue = document.getElementById("co-guests-value");
+  const guestsMinus = document.getElementById("co-guests-minus");
+  const guestsPlus = document.getElementById("co-guests-plus");
+  const seatsHint = document.getElementById("co-seats-hint");
+  const submitBtn = document.getElementById("co-submit-btn");
+  const nameInput = document.getElementById("co-name");
+  const lastInput = document.getElementById("co-lastname");
+  const emailInput = document.getElementById("co-email");
 
-  /* ── DOM refs ── */
-  const timeSelect    = document.getElementById('co-time');
-  const timeHint      = document.getElementById('co-time-hint');
-  const guestsValue   = document.getElementById('co-guests-value');
-  const guestsMinus   = document.getElementById('co-guests-minus');
-  const guestsPlus    = document.getElementById('co-guests-plus');
-  const seatsHint     = document.getElementById('co-seats-hint');
-  const submitBtn     = document.getElementById('co-submit-btn');
-  const nameInput     = document.getElementById('co-name');
-  const lastnameInput = document.getElementById('co-lastname');
-  const emailInput    = document.getElementById('co-email');
+  if (!timeSelect) return;
 
-  if (!timeSelect) return; // checkout modal not on this page
+  let selectedDate = new Date();
+  let guestCount = 1;
+  let seatsOk = false; // tracks latest availability result
+  let checkTimer = null; // debounce timer
 
-  let selectedDate   = new Date(); // updated when checkout opens
-  let guestCount     = 1;
-  let availableSeats = MAX_CAPACITY;
-
-  /* ── Populate time slots ── */
-  function populateTimeSlots(date) {
+  /* ── Populate slots ── */
+  function populateSlots(date) {
     selectedDate = date;
-    timeSelect.innerHTML = '<option value="" disabled selected>Select time…</option>';
+    seatsOk = false;
+    timeSelect.innerHTML =
+      '<option value="" disabled selected>Select time…</option>';
 
-    const slots = generateTimeSlots(date);
+    const slots = generateSlots(date);
 
     if (slots.length === 0) {
-      const opt = document.createElement('option');
-      opt.value = '';
+      const opt = document.createElement("option");
       opt.disabled = true;
-      opt.textContent = 'Restaurant closed this day';
+      opt.textContent = "Restaurant closed this day";
       timeSelect.appendChild(opt);
-      timeHint.textContent = 'The restaurant is closed on this day.';
-      timeHint.style.color = 'var(--red-glow)';
+      if (timeHint) {
+        timeHint.textContent = "Restaurant is closed on this day.";
+        timeHint.style.color = "var(--red-glow)";
+      }
       updateSubmitState();
       return;
     }
 
-    timeHint.textContent = '';
-    slots.forEach(slot => {
-      const seatsLeft = getAvailableSeats(date, slot);
-      const opt = document.createElement('option');
+    if (timeHint) timeHint.textContent = "";
+
+    slots.forEach((slot) => {
+      const opt = document.createElement("option");
       opt.value = slot;
-      if (seatsLeft === 0) {
-        opt.textContent = `${slot} — Fully booked`;
-        opt.disabled = true;
-      } else if (seatsLeft <= 5) {
-        opt.textContent = `${slot} — Only ${seatsLeft} seats left!`;
-      } else {
-        opt.textContent = slot;
-      }
+      opt.textContent = slot;
       timeSelect.appendChild(opt);
     });
 
-    updateSeatsHint();
     updateSubmitState();
   }
 
-  /* ── Update seat availability hint ── */
-  function updateSeatsHint() {
+  /* ── Check availability via API ── */
+  async function checkAvailability() {
     const slot = timeSelect.value;
     if (!slot) {
-      seatsHint.textContent = '';
+      seatsOk = false;
+      updateSubmitState();
       return;
     }
 
-    availableSeats = getAvailableSeats(selectedDate, slot);
+    if (seatsHint) {
+      seatsHint.textContent = "Checking availability…";
+      seatsHint.style.color = "var(--silver)";
+    }
 
-    if (availableSeats === 0) {
-      seatsHint.textContent = '✗ Fully booked at this time.';
-      seatsHint.style.color = 'var(--red-glow)';
-    } else if (guestCount > availableSeats) {
-      seatsHint.textContent = `✗ Only ${availableSeats} seat${availableSeats > 1 ? 's' : ''} available — reduce guest count.`;
-      seatsHint.style.color = 'var(--red-glow)';
-    } else if (availableSeats <= 5) {
-      seatsHint.textContent = `⚠ Only ${availableSeats} seat${availableSeats > 1 ? 's' : ''} left at this time!`;
-      seatsHint.style.color = '#fbbf24';
+    const data = await checkAvailabilityAPI(
+      toDateStr(selectedDate),
+      slot,
+      guestCount,
+    );
+
+    if (!data) {
+      if (seatsHint) {
+        seatsHint.textContent = "Could not check availability — try again.";
+        seatsHint.style.color = "var(--silver)";
+      }
+      seatsOk = false;
+    } else if (!data.available) {
+      if (seatsHint) {
+        seatsHint.textContent = `✗ Only ${data.freeSeats} seat${data.freeSeats !== 1 ? "s" : ""} available for ${guestCount} guests.`;
+        seatsHint.style.color = "var(--red-glow)";
+      }
+      seatsOk = false;
+    } else if (data.freeSeats <= 5) {
+      if (seatsHint) {
+        seatsHint.textContent = `⚠ Only ${data.freeSeats} seat${data.freeSeats !== 1 ? "s" : ""} left!`;
+        seatsHint.style.color = "#fbbf24";
+      }
+      seatsOk = true;
     } else {
-      seatsHint.textContent = `✓ ${availableSeats} seats available`;
-      seatsHint.style.color = '#4ade80';
+      if (seatsHint) {
+        seatsHint.textContent = `✓ ${data.freeSeats} seats available`;
+        seatsHint.style.color = "#4ade80";
+      }
+      seatsOk = true;
     }
 
     updateSubmitState();
   }
 
-  /* ── Guest counter ── */
-  guestsMinus.addEventListener('click', () => {
-    if (guestCount > 1) {
-      guestCount--;
-      guestsValue.textContent = guestCount;
-      updateSeatsHint();
-    }
-  });
-
-  guestsPlus.addEventListener('click', () => {
-    if (guestCount < MAX_CAPACITY) {
-      guestCount++;
-      guestsValue.textContent = guestCount;
-      updateSeatsHint();
-    }
-  });
-
-  /* ── Time slot change ── */
-  timeSelect.addEventListener('change', updateSeatsHint);
-
-  /* ── Form field changes → recheck submit state ── */
-  [nameInput, lastnameInput, emailInput].forEach(el => {
-    el?.addEventListener('input', updateSubmitState);
-  });
+  /* ── Debounced availability check ── */
+  function scheduleCheck() {
+    clearTimeout(checkTimer);
+    checkTimer = setTimeout(checkAvailability, 400);
+  }
 
   /* ── Submit button state ── */
   function updateSubmitState() {
     if (!submitBtn) return;
+    const slot = timeSelect.value;
+    const name = nameInput?.value.trim() || "";
+    const last = lastInput?.value.trim() || "";
+    const email = emailInput?.value.trim() || "";
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const can = !!(slot && seatsOk && name && last && emailOk);
+    submitBtn.disabled = !can;
+    submitBtn.style.opacity = can ? "1" : "0.45";
+    submitBtn.style.cursor = can ? "pointer" : "not-allowed";
+  }
 
-    const slot     = timeSelect.value;
-    const name     = nameInput?.value.trim()     || '';
-    const lastname = lastnameInput?.value.trim() || '';
-    const email    = emailInput?.value.trim()    || '';
-    const emailOk  = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    const seatsOk  = slot && availableSeats > 0 && guestCount <= availableSeats;
-    const fieldsOk = name && lastname && emailOk;
-
-    submitBtn.disabled = !(seatsOk && fieldsOk);
-
-    if (submitBtn.disabled) {
-      submitBtn.style.opacity    = '0.45';
-      submitBtn.style.cursor     = 'not-allowed';
-    } else {
-      submitBtn.style.opacity    = '1';
-      submitBtn.style.cursor     = 'pointer';
+  /* ── Guest counter ── */
+  guestsMinus?.addEventListener("click", () => {
+    if (guestCount > 1) {
+      guestCount--;
+      if (guestsValue) guestsValue.textContent = guestCount;
+      scheduleCheck();
     }
-  }
+  });
+  guestsPlus?.addEventListener("click", () => {
+    guestCount++;
+    if (guestsValue) guestsValue.textContent = guestCount;
+    scheduleCheck();
+  });
 
-  /* ── Expose populateTimeSlots so order.js can call it ──
-   * order.js calls window.prepareCheckout(date) before opening the modal.
-   * ── */
-  window.prepareCheckout = function(date) {
+  timeSelect.addEventListener("change", checkAvailability);
+  [nameInput, lastInput, emailInput].forEach((el) =>
+    el?.addEventListener("input", updateSubmitState),
+  );
+
+  /* ── Expose to order.js ── */
+  window.prepareCheckout = (date) => {
     guestCount = 1;
-    guestsValue.textContent = 1;
-    populateTimeSlots(date || new Date());
+    seatsOk = false;
+    if (guestsValue) guestsValue.textContent = 1;
+    if (seatsHint) seatsHint.textContent = "";
+    populateSlots(date || new Date());
   };
-
-  /* ── Attach to checkout form submit (supplement order.js handler) ── */
-  const form = document.getElementById('checkout-form');
-  if (form) {
-    form.addEventListener('submit', () => {
-      // order.js handles the actual submit logic
-      // This just logs the extra fields for now
-      console.log('Checkout extras:', {
-        time:   timeSelect.value,
-        guests: guestCount
-      });
-    });
-  }
-
-  /* ── Initial call if modal is already visible on load ── */
-  populateTimeSlots(new Date());
 });
