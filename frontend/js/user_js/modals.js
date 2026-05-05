@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 document.addEventListener("DOMContentLoaded", () => {
   const overlay = document.getElementById("modal-overlay");
   const allModals = document.querySelectorAll(".modal-content");
@@ -127,19 +126,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setButtonLoading(submitBtn, true);
 
-        // TODO: Call API to update profile
-        // const response = await fetch("http://localhost:3000/api/users/profile", {
-        //   method: "PUT",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ name, email, phone, password })
-        // });
+        // Get token from localStorage
+        const token = localStorage.getItem("token");
+        if (!token) {
+          showToast("You are not logged in", "error");
+          setButtonLoading(submitBtn, false);
+          return;
+        }
 
-        // For now, just update localStorage
+        // Call API to update profile
+        const response = await fetch("http://localhost:3000/api/auth/profile", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({
+            username: name,
+            phone,
+            password: password || undefined,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to update profile");
+        }
+
+        // Update localStorage with new data
         const user = JSON.parse(localStorage.getItem("user") || "null");
         if (user) {
-          user.username = name;
-          user.email = email;
-          user.phone = phone;
+          user.username = result.user.username;
+          user.email = result.user.email;
+          user.phone = result.user.phone;
           localStorage.setItem("user", JSON.stringify(user));
         }
 

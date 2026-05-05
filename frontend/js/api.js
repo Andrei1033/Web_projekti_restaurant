@@ -94,8 +94,15 @@ function getUser() {
   }
 }
 
-function setUser(user) {
+function setUser(user, token) {
   localStorage.setItem("user", JSON.stringify(user));
+  if (token) {
+    localStorage.setItem("token", token);
+  }
+}
+
+function getToken() {
+  return localStorage.getItem("token");
 }
 
 function updateUIForLogin(user) {
@@ -197,8 +204,8 @@ if (loginForm) {
         throw new Error(json.error || "Login failed");
       }
 
-      setUser(json.user);
-      console.log("LOGIN OK:", json.user);
+      setUser(json.user, json.token);
+      console.log("LOGIN OK:", json.user, "Token:", json.token);
 
       showToast("Login successful 🐺", "success", 2000);
       loginForm.reset();
@@ -279,6 +286,11 @@ if (registerForm) {
         throw new Error(json.error || "Registration failed");
       }
 
+      // Store token and user if provided
+      if (json.token && json.user) {
+        setUser(json.user, json.token);
+      }
+
       showToast("Account created successfully 🐺", "success", 2000);
       registerForm.reset();
 
@@ -350,8 +362,8 @@ if (adminLoginForm) {
         throw new Error("This account does not have admin privileges");
       }
 
-      setUser(json.user);
-      console.log("ADMIN LOGIN OK:", json.user);
+      setUser(json.user, json.token);
+      console.log("ADMIN LOGIN OK:", json.user, "Token:", json.token);
 
       showToast("Admin login successful 🐺", "success", 2000);
       adminLoginForm.reset();
@@ -404,6 +416,7 @@ if (logoutBtn) {
       // await fetch("http://localhost:3000/api/auth/logout", { method: "POST" });
 
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       showToast("Logged out successfully", "success", 2000);
 
       updateUIForLogout();
