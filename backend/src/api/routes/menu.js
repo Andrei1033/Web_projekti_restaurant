@@ -26,7 +26,7 @@ router.use(authenticateToken, adminOnly);
 router.post('/days', uploadSingle, createDay);
 router.put('/days/:id', uploadSingle, updateDay);
 router.delete('/days/:id', deleteDay);
-router.delete('/admin/menu/theme/:date', deleteDayTheme);
+router.delete('/theme/:date', deleteDayTheme);
 router.post('/days/:id/dishes', addDishToDay);
 router.delete('/days/:id/dishes/:dishId', removeDishFromDay);
 

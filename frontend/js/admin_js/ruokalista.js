@@ -191,7 +191,7 @@ async function deleteDayTheme(date) {
 
   try {
     // Backendissä on DELETE /api/admin/menu/theme/:date
-    const response = await fetch(`${API_BASE}/admin/menu/theme/${date}`, {
+    const response = await fetch(`${API_BASE}/menu/theme/${date}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${getToken()}`,
