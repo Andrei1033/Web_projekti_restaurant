@@ -5,6 +5,7 @@
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>NightWolf Admin - Tilaukset</title>
       <script src="../js/admin_js/tilaukset.js" defer></script>
+      <link rel="stylesheet" href="../css/admin_css/ruokalista.css" />
       <link rel="stylesheet" href="../css/admin_css/tilaukset.css" />
    </head>
    <body>
@@ -35,60 +36,46 @@
                <h2>Tilausten hallinta</h2>
                <p>Seuraa ja hallinnoi asiakkaiden tilauksia</p>
             </div>
-            <button class="primary-btn" onclick="openModal('orderModal')">+ Uusi tilaus</button>
+            <div class="header-actions">
+               <button id="refresh-btn" class="secondary-btn">🔄 Päivitä</button>
+               <a href="../user_html/index.html" class="primary-btn" target="_blank">+ Uusi tilaus</a>
+            </div>
          </section>
 
-         <div class="orders-grid">
-            <section class="card order">
-               <div class="order-top"></div>
-               <div class="order-items"></div>
-            </section>
-
-            <!-- TILAUS MODAL -->
-            <div id="orderModal" class="modal">
-               <div class="modal-content wide">
-                  <h2>Lisää uusi tilaus</h2>
-
-                  <div class="form-grid">
-                     <div>
-                        <label>Asiakkaan nimi *</label>
-                        <input type="text" placeholder="Esim. Matti Meikäläinen" />
-                     </div>
-
-                     <div>
-                        <label>Sähköposti *</label>
-                        <input type="email" placeholder="esimerkki@email.com" />
-                     </div>
-
-                     <div class="full">
-                        <label>Tilatut tuotteet *</label>
-                        <div class="order-row">
-                           <input type="text" placeholder="Tuotteen nimi" />
-                           <input type="number" value="1" class="qty" />
-                           <input type="number" value="0" class="price" />
-                        </div>
-
-                        <button class="add-item">+ Lisää tuote</button>
-                     </div>
-
-                     <div class="full">
-                        <label>Huomiot (valinnainen)</label>
-                        <textarea placeholder="Esim. Extra sipulia kiitos!"></textarea>
-                     </div>
-
-                     <div class="full total-box">
-                        <span>Yhteensä:</span>
-                        <strong id="orderTotal">0.00€</strong>
-                     </div>
-                  </div>
-
-                  <div class="modal-actions">
-                     <button class="primary-btn" onclick="saveOrder()">💾 Tallenna tilaus</button>
-                     <button onclick="closeModal('orderModal')">Peruuta</button>
-                  </div>
+         <!-- Suodatinpalkki -->
+         <div class="filter-bar">
+            <div class="filter-group">
+               <button id="filter-btn" class="filter-btn">📊 Suodata: Kaikki tilaukset ▼</button>
+               <div id="filter-dropdown" class="filter-dropdown">
+                  <div class="filter-option" data-status="all">Kaikki tilaukset</div>
+                  <div class="filter-option" data-status="upcoming">Vain tulevat tilaukset</div>
                </div>
             </div>
+            <div class="stats"></div>
+         </div>
+
+         <!-- Tilauskorttien grid -->
+         <div class="orders-grid"></div>
+
+         <!-- Sivutus -->
+         <div class="pagination">
+            <button id="prev-page" class="page-btn">◀ Edellinen</button>
+            <span id="page-info" class="page-info">Sivu 1 / 1</span>
+            <button id="next-page" class="page-btn">Seuraava ▶</button>
          </div>
       </main>
+
+      <!-- Modaali tilauksen näyttämistä ja muokkausta varten -->
+      <div id="orderModal" class="modal">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h3 id="modal-title">Tilauksen tiedot</h3>
+               <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-body">
+               <!-- Sisältö ladataan dynaamisesti -->
+            </div>
+         </div>
+      </div>
    </body>
 </html>

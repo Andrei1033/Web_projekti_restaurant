@@ -25,6 +25,7 @@ import {
   getAllOrders,
   updateStatus,
   cancelOrder,
+  updateOrder,
   getDashboard,
 } from '../controllers/orderController.js';
 
@@ -45,6 +46,8 @@ router.get('/:id', auth, getOrderById);
 router.get('/admin/all', auth, adminOnly, getAllOrders);
 router.get('/admin/dashboard', auth, adminOnly, getDashboard);
 router.patch('/:id/status', auth, adminOnly, updateStatus);
+// Admin: full update of an order (time, guests, notes, items)
+router.put('/:id', auth, adminOnly, updateOrder);
 router.delete('/:id', auth, adminOnly, cancelOrder);
 
 export default router;

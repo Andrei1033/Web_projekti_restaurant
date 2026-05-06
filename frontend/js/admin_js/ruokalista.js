@@ -11,7 +11,7 @@ function checkAuth() {
   const token = getToken();
   if (!token) {
     alert("Sinun täytyy kirjautua sisään!");
-    window.location.href = "../user_html/index.html"; // Muuta oikea polku kirjautumissivulle
+    window.location.href = "../user_html/index.html";
     return false;
   }
   return true;

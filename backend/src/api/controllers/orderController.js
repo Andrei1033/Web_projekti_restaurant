@@ -387,6 +387,111 @@ const updateStatus = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
+//  PUT /api/orders/:id  (Admin) Full update of order (time, guests, notes, items)
+//  This updates orders, order_items and reservations inside a transaction
+// ═══════════════════════════════════════════════════════════════
+
+const updateOrder = async (req, res) => {
+  const conn = await pool.getConnection();
+  try {
+    const {id} = req.params;
+    const {pickup_time, guest_count, notes, total_price, items} = req.body;
+
+    if (!pickup_time || !items || !Array.isArray(items)) {
+      return res
+        .status(400)
+        .json({error: 'pickup_time and items array are required'});
+    }
+
+    const newGuestCount = parseInt(guest_count || '1', 10);
+    if (isNaN(newGuestCount) || newGuestCount < 1) {
+      return res.status(400).json({error: 'guest_count must be at least 1'});
+    }
+
+    const timeStr = toTimeStr(pickup_time);
+
+    await conn.beginTransaction();
+
+    const [existingRows] = await conn.query(
+      'SELECT * FROM orders WHERE id = ?',
+      [id]
+    );
+    if (existingRows.length === 0) {
+      await conn.rollback();
+      return res.status(404).json({error: 'Order not found'});
+    }
+
+    const existing = existingRows[0];
+    const pickupDate = existing.pickup_date;
+
+    // Check availability for the (possibly new) time: exclude this order's reservation
+    const [availRows] = await conn.query(
+      `SELECT COALESCE(SUM(seats), 0) AS booked
+       FROM reservations
+       WHERE pickup_date = ? AND pickup_time = ? AND order_id != ?`,
+      [pickupDate, timeStr, id]
+    );
+
+    const bookedSeats = parseInt(availRows[0].booked, 10);
+    const freeSeats = MAX_CAPACITY - bookedSeats;
+    if (freeSeats < newGuestCount) {
+      await conn.rollback();
+      return res.status(409).json({error: 'Not enough seats available'});
+    }
+
+    // Update orders table
+    await conn.query(
+      `UPDATE orders SET pickup_time = ?, guest_count = ?, total_price = ?, notes = ? WHERE id = ?`,
+      [
+        timeStr,
+        newGuestCount,
+        parseFloat(total_price || 0).toFixed(2),
+        notes?.trim() || null,
+        id,
+      ]
+    );
+
+    // Replace order_items
+    await conn.query('DELETE FROM order_items WHERE order_id = ?', [id]);
+
+    for (const item of items) {
+      const dishId = parseInt(item.dish_id, 10);
+      const quantity = parseInt(item.quantity, 10);
+      const unitPrice = parseFloat(item.unit_price);
+
+      if (!dishId || isNaN(quantity) || quantity < 1 || isNaN(unitPrice)) {
+        await conn.rollback();
+        return res
+          .status(400)
+          .json({error: `Invalid item: ${JSON.stringify(item)}`});
+      }
+
+      await conn.query(
+        `INSERT INTO order_items (order_id, dish_id, quantity, unit_price) VALUES (?, ?, ?, ?)`,
+        [id, dishId, quantity, unitPrice.toFixed(2)]
+      );
+    }
+
+    // Update reservation (time + seats)
+    await conn.query(
+      `UPDATE reservations SET pickup_time = ?, seats = ? WHERE order_id = ?`,
+      [timeStr, newGuestCount, id]
+    );
+
+    await conn.commit();
+
+    const updated = await getFullOrder(id);
+    res.json(updated);
+  } catch (err) {
+    await conn.rollback();
+    console.error('updateOrder:', err);
+    res.status(500).json({error: 'Server error'});
+  } finally {
+    conn.release();
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
 //  DELETE /api/orders/:id  (Admin) Cancels and removes an order.
 // ═══════════════════════════════════════════════════════════════
 
@@ -524,6 +629,7 @@ export {
   getOrderById,
   getAllOrders,
   updateStatus,
+  updateOrder,
   cancelOrder,
   getDashboard,
 };
