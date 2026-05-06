@@ -6,6 +6,7 @@ import uploadRoutes from './routes/uploads.js';
 import orderRoutes from './routes/orders.js';
 
 import adminRoutes from './routes/admin.js';
+import {readFile} from 'fs/promises';
 
 const router = express.Router();
 
@@ -17,6 +18,19 @@ router.use('/orders', orderRoutes);
 
 router.use('/admin', adminRoutes);
 
+// Public ABOUT endpoint (reads the same JSON used by admin)
+router.get('/about', async (_req, res) => {
+  try {
+    const data = await readFile(
+      new URL('../data/about.json', import.meta.url),
+      'utf8'
+    );
+    return res.json(JSON.parse(data));
+  } catch (err) {
+    console.error('Error reading about data:', err);
+    return res.status(500).json({error: 'Could not read about data'});
+  }
+});
 // /api/availability → orderRoutes handles it internally
 router.get('/availability', async (req, res) => {
   // Forward to orderController directly

@@ -9,7 +9,8 @@
 
 const CHECKOUT_API = "http://localhost:3000";
 
-const OPENING_HOURS = {
+// Will be populated from /api/about openingHours (fallback below)
+let OPENING_HOURS = {
   0: null,
   1: { open: "11:00", close: "22:00" },
   2: { open: "11:00", close: "22:00" },
@@ -18,6 +19,96 @@ const OPENING_HOURS = {
   5: { open: "11:00", close: "22:00" },
   6: { open: "12:00", close: "23:00" },
 };
+
+let fetchOpeningHoursPromise = null;
+
+function buildOpeningHoursMap(openingHoursArray) {
+  // Return map 0..6 -> {open, close} or null
+  const map = { 0: null, 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
+  if (!Array.isArray(openingHoursArray)) return map;
+
+  const nameToIndex = (name) => {
+    if (!name) return null;
+    const key = name.trim().slice(0, 3).toLowerCase();
+    switch (key) {
+      case "mon":
+        return 1;
+      case "tue":
+      case "tuh":
+      case "tis":
+        return 2;
+      case "wed":
+      case "ons":
+        return 3;
+      case "thu":
+      case "tor":
+        return 4;
+      case "fri":
+      case "pei":
+        return 5;
+      case "sat":
+      case "lau":
+        return 6;
+      case "sun":
+      case "søn":
+      case "sön":
+        return 0;
+      default:
+        return null;
+    }
+  };
+
+  openingHoursArray.forEach((item) => {
+    const day = (item.day || "").trim();
+    const hours = (item.hours || "").trim();
+    if (!day || !hours) return;
+
+    // Parse hours, e.g. "10:00 – 22:00"
+    const [openRaw, closeRaw] = hours.split(/[-–—]/).map((s) => s && s.trim());
+    const open = openRaw ? openRaw.slice(0, 5) : null;
+    const close = closeRaw ? closeRaw.slice(0, 5) : null;
+    if (!open || !close) return;
+
+    // Day may be a range like "Mon – Fri" or single day
+    const parts = day.split(/[-–—]/).map((s) => s && s.trim());
+    if (parts.length === 1) {
+      const idx = nameToIndex(parts[0]);
+      if (idx !== null) map[idx] = { open, close };
+    } else if (parts.length === 2) {
+      const start = nameToIndex(parts[0]);
+      const end = nameToIndex(parts[1]);
+      if (start === null || end === null) return;
+      let i = start;
+      while (true) {
+        map[i] = { open, close };
+        if (i === end) break;
+        i = (i + 1) % 7;
+      }
+    }
+  });
+
+  return map;
+}
+
+function loadOpeningHoursFromApi() {
+  if (fetchOpeningHoursPromise) return fetchOpeningHoursPromise;
+  fetchOpeningHoursPromise = fetch(`${CHECKOUT_API}/api/about`)
+    .then((r) => {
+      if (!r.ok) throw new Error("Could not fetch about");
+      return r.json();
+    })
+    .then((data) => {
+      if (data && data.openingHours) {
+        const map = buildOpeningHoursMap(data.openingHours);
+        // Only replace keys that are populated
+        OPENING_HOURS = { ...OPENING_HOURS, ...map };
+      }
+    })
+    .catch((e) => {
+      console.warn("Could not load opening hours from API, using defaults", e);
+    });
+  return fetchOpeningHoursPromise;
+}
 
 const SLOT_INTERVAL = 30;
 const LAST_OFFSET = 30;
@@ -54,6 +145,9 @@ function generateSlots(date) {
   }
   return slots;
 }
+
+// Ensure opening hours are requested at startup so prepareCheckout can use API data
+loadOpeningHoursFromApi();
 
 /* ── Real API call ── */
 async function checkAvailabilityAPI(date, time, guests) {
@@ -254,6 +348,9 @@ document.addEventListener("DOMContentLoaded", () => {
     seatsOk = false;
     if (guestsValue) guestsValue.textContent = 1;
     if (seatsHint) seatsHint.textContent = "";
-    populateSlots(date || new Date());
+    const d = date || new Date();
+    // If opening hours are still loading, wait for them
+    const p = fetchOpeningHoursPromise || Promise.resolve();
+    p.then(() => populateSlots(d)).catch(() => populateSlots(d));
   };
 });

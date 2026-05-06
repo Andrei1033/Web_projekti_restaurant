@@ -1,8 +1,28 @@
 // orderController.js
 import pool from '../../utils/database.js';
+import {readFile} from 'fs/promises';
 
-// Config
-const MAX_CAPACITY = parseInt(process.env.MAX_CAPACITY || '40', 10);
+// Config: capacity is read from backend/src/data/about.json `capacity` field if present,
+// otherwise falls back to env MAX_CAPACITY or 40.
+let _cachedCapacity = null;
+async function getMaxCapacity() {
+  if (_cachedCapacity !== null) return _cachedCapacity;
+  try {
+    const raw = await readFile(
+      new URL('../../data/about.json', import.meta.url),
+      'utf8'
+    );
+    const obj = JSON.parse(raw);
+    const c = parseInt(obj?.capacity ?? process.env.MAX_CAPACITY ?? '40', 10);
+    _cachedCapacity = Number.isFinite(c) ? c : 40;
+    return _cachedCapacity;
+  } catch (err) {
+    console.error('Error reading capacity from about.json:', err);
+    const c = parseInt(process.env.MAX_CAPACITY || '40', 10);
+    _cachedCapacity = Number.isFinite(c) ? c : 40;
+    return _cachedCapacity;
+  }
+}
 
 // Helpers
 // Format Date → "HH:MM:SS" for MySQL TIME column
@@ -63,14 +83,15 @@ const checkAvailability = async (req, res) => {
     );
 
     const bookedSeats = parseInt(rows[0].booked, 10);
-    const freeSeats = MAX_CAPACITY - bookedSeats;
+    const maxCap = await getMaxCapacity();
+    const freeSeats = maxCap - bookedSeats;
     const available = freeSeats >= guestCount;
 
     res.json({
       available,
       freeSeats,
       bookedSeats,
-      totalCapacity: MAX_CAPACITY,
+      totalCapacity: maxCap,
       requestedGuests: guestCount,
     });
   } catch (err) {
@@ -139,7 +160,8 @@ const createOrder = async (req, res) => {
     );
 
     const bookedSeats = parseInt(avail[0].booked, 10);
-    const freeSeats = MAX_CAPACITY - bookedSeats;
+    const maxCap = await getMaxCapacity();
+    const freeSeats = maxCap - bookedSeats;
 
     if (freeSeats < guestCount) {
       return res.status(409).json({
@@ -469,7 +491,8 @@ const updateOrder = async (req, res) => {
     );
 
     const bookedSeats = parseInt(availRows[0].booked, 10);
-    const freeSeats = MAX_CAPACITY - bookedSeats;
+    const maxCap = await getMaxCapacity();
+    const freeSeats = maxCap - bookedSeats;
     if (freeSeats < newGuestCount) {
       await conn.rollback();
       return res.status(409).json({error: 'Not enough seats available'});
