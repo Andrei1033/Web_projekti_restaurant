@@ -14,7 +14,7 @@ const toTimeStr = (timeStr) => {
 
 // Send order confirmation email placeholder — replace with nodemailer later
 const sendConfirmationEmail = async (order) => {
-  // TODO: implement with nodemailer
+  // maybe later: implement with nodemailer
   console.log(
     `[EMAIL] Order #${order.id} confirmed → ${order.guest_email || 'registered user'}`
   );
@@ -177,17 +177,53 @@ const createOrder = async (req, res) => {
 
     const orderId = orderResult.insertId;
 
-    // 2. INSERT order_items
+    // 2. INSERT order_items (create placeholder dishes when needed to avoid FK errors)
     for (const item of items) {
-      const dishId = parseInt(item.dish_id, 10);
+      let dishId = parseInt(item.dish_id, 10);
       const quantity = parseInt(item.quantity, 10);
       const unitPrice = parseFloat(item.unit_price);
 
-      if (!dishId || quantity < 1 || isNaN(unitPrice)) {
+      if (isNaN(quantity) || quantity < 1 || isNaN(unitPrice)) {
         await conn.rollback();
         return res
           .status(400)
           .json({error: `Invalid item: ${JSON.stringify(item)}`});
+      }
+
+      if (!dishId) {
+        const [dishInsert] = await conn.query(
+          `INSERT INTO dishes (name, description, price, current_dish_image, dietary_tags, is_active)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            item.dish_name ? item.dish_name.trim() : 'Unknown',
+            null,
+            unitPrice,
+            null,
+            '',
+            0,
+          ]
+        );
+        dishId = dishInsert.insertId;
+      } else {
+        const [exists] = await conn.query(
+          'SELECT id FROM dishes WHERE id = ?',
+          [dishId]
+        );
+        if (exists.length === 0) {
+          const [dishInsert] = await conn.query(
+            `INSERT INTO dishes (name, description, price, current_dish_image, dietary_tags, is_active)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+              item.dish_name ? item.dish_name.trim() : `Imported ${dishId}`,
+              null,
+              unitPrice,
+              null,
+              '',
+              0,
+            ]
+          );
+          dishId = dishInsert.insertId;
+        }
       }
 
       await conn.query(
@@ -455,15 +491,51 @@ const updateOrder = async (req, res) => {
     await conn.query('DELETE FROM order_items WHERE order_id = ?', [id]);
 
     for (const item of items) {
-      const dishId = parseInt(item.dish_id, 10);
+      let dishId = parseInt(item.dish_id, 10);
       const quantity = parseInt(item.quantity, 10);
       const unitPrice = parseFloat(item.unit_price);
 
-      if (!dishId || isNaN(quantity) || quantity < 1 || isNaN(unitPrice)) {
+      if (isNaN(quantity) || quantity < 1 || isNaN(unitPrice)) {
         await conn.rollback();
         return res
           .status(400)
           .json({error: `Invalid item: ${JSON.stringify(item)}`});
+      }
+
+      if (!dishId) {
+        const [dishInsert] = await conn.query(
+          `INSERT INTO dishes (name, description, price, current_dish_image, dietary_tags, is_active)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            item.dish_name ? item.dish_name.trim() : 'Unknown',
+            null,
+            unitPrice,
+            null,
+            '',
+            0,
+          ]
+        );
+        dishId = dishInsert.insertId;
+      } else {
+        const [exists] = await conn.query(
+          'SELECT id FROM dishes WHERE id = ?',
+          [dishId]
+        );
+        if (exists.length === 0) {
+          const [dishInsert] = await conn.query(
+            `INSERT INTO dishes (name, description, price, current_dish_image, dietary_tags, is_active)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [
+              item.dish_name ? item.dish_name.trim() : `Imported ${dishId}`,
+              null,
+              unitPrice,
+              null,
+              '',
+              0,
+            ]
+          );
+          dishId = dishInsert.insertId;
+        }
       }
 
       await conn.query(
