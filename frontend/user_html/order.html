@@ -245,6 +245,90 @@
       </div>
    </div>
 
+   <!-- Checkout Modal -->
+   <div id="checkout-modal" class="modal-content hidden">
+      <button class="close-modal" aria-label="Close">&times;</button>
+      <h2 class="modal-title">CONFIRM <span class="red">ORDER</span></h2>
+
+      <!-- Order summary -->
+      <div class="checkout-summary" id="checkout-summary"></div>
+      <div class="checkout-divider"></div>
+
+      <form class="modal-form" id="checkout-form" novalidate>
+
+         <!-- ── Pickup time + guest count ── -->
+         <p class="checkout-form-label">Pickup details</p>
+
+         <div class="input-row-grid">
+
+            <div class="input-group">
+            <label for="co-time">Pickup time</label>
+            <select id="co-time" required>
+               <option value="" disabled selected>Select time…</option>
+               <!-- Filled by JS -->
+            </select>
+            <p class="input-hint" id="co-time-hint"></p>
+            </div>
+
+            <div class="input-group">
+            <label for="co-guests">Number of guests</label>
+            <div class="qty-control" style="width:100%; border-radius:6px;">
+               <button type="button" class="qty-btn" id="co-guests-minus" aria-label="Fewer guests">−</button>
+               <span class="qty-value" id="co-guests-value">1</span>
+               <button type="button" class="qty-btn" id="co-guests-plus"  aria-label="More guests">+</button>
+            </div>
+            <!-- Availability feedback -->
+            <p class="input-hint" id="co-seats-hint"></p>
+            </div>
+
+         </div>
+
+         <div class="checkout-divider"></div>
+
+         <!-- ── Contact details ── -->
+         <p class="checkout-form-label">Your details</p>
+
+         <div class="input-row-grid">
+            <div class="input-group">
+            <label for="co-name">First name</label>
+            <input type="text" id="co-name" placeholder="Alex" required>
+            </div>
+            <div class="input-group">
+            <label for="co-lastname">Last name</label>
+            <input type="text" id="co-lastname" placeholder="Wolf" required>
+            </div>
+         </div>
+
+         <div class="input-group">
+            <label for="co-email">Email address</label>
+            <input type="email" id="co-email" placeholder="wolf@night.fi" required>
+            <p class="input-hint">Order confirmation will be sent here.</p>
+         </div>
+
+         <!-- ── Account upsell ── -->
+         <div class="checkout-upsell">
+            <div class="upsell-icon">🐺</div>
+            <div class="upsell-text">
+            <strong>Join the Pack</strong>
+            <p>Save order history & get exclusive member discounts.</p>
+            </div>
+            <a href="#" id="checkout-register-link" class="upsell-btn">Register free</a>
+         </div>
+
+         <!-- ── Total + submit ── -->
+         <div class="checkout-total-row">
+            <span>Total</span>
+            <span class="checkout-total-price" id="checkout-total-price">0.00 €</span>
+         </div>
+
+         <button type="submit" class="hero-cta" id="co-submit-btn"
+                  style="width:100%; margin-top:16px;" disabled>
+            Place Order
+         </button>
+
+      </form>
+   </div>
+
 </div>
 <!-- Modals end -->
 
@@ -265,17 +349,19 @@
             <div class="header-glow-line"></div>
 
             <!-- Logo -->
-            <div id="title">
-               <img
-                  src="../assets/nightwolf_logo2.svg"
-                  alt="Night Wolf restaurant logo"
-                  id="logo"
-               />
-            </div>
+            <a href="../user_html/index.html">
+               <div id="title">
+                  <img
+                     src="../assets/nightwolf_logo2.svg"
+                     alt="Night Wolf restaurant logo"
+                     id="logo"
+                  />
+               </div>
+            </a>
       
          <!-- Nav links (desktop) -->
          <nav id="main-nav" aria-label="Main navigation">
-            <a href="#week-menu" class="nav-link">Menu</a>
+            <a href="../user_html/index.html" class="nav-link">Menu</a>
             <a href="../user_html/order.html" class="nav-link">Order</a>
             <a href="../user_html/about.html" class="nav-link">About</a>
          </nav>
