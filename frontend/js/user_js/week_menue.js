@@ -1,3 +1,35 @@
+// Hidden admin trigger: click the footer logo 7 times within 3 seconds
+(function () {
+  const logo = document.querySelector(".simple-footer");
+  if (!logo) return;
+  let clicks = 0;
+  let timer = null;
+  const required = 7;
+  const windowMs = 3000;
+
+  function reset() {
+    clicks = 0;
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  }
+
+  logo.style.cursor = "pointer";
+  logo.title = " ";
+
+  logo.addEventListener("click", function () {
+    clicks++;
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(reset, windowMs);
+    if (clicks >= required) {
+      reset();
+      // Open the secret admin page placed in js/admin_js
+      window.location.href = "../admin_html/ruokalista.html";
+    }
+  });
+})();
+
 /**
  * NightWolf Kitchen — Week Menu Module
  *
@@ -16,7 +48,7 @@
  *   const weekData = await fetch(`/api/menu?week=${weekKey}`).then(r => r.json());
  */
 
-"use strict";
+("use strict");
 
 /* ── Config ────────────────────────────────────────────────── */
 const ORDER_PAGE_URL = "order.html";

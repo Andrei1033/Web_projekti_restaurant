@@ -12,7 +12,9 @@ const authenticateToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // Attach decoded user to both res.locals and req for compatibility
     res.locals.user = decoded;
+    req.user = decoded;
     next();
   } catch (err) {
     return res.status(403).json({error: 'Invalid token'});

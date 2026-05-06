@@ -185,6 +185,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateSubmitState() {
     if (!submitBtn) return;
     const slot = timeSelect.value;
+    // If a non-admin user is logged in, only require time slot + availability
+    const currentUser = typeof getUser === "function" ? getUser() : null;
+    if (currentUser && currentUser.role !== "admin") {
+      const can = !!(slot && seatsOk);
+      submitBtn.disabled = !can;
+      submitBtn.style.opacity = can ? "1" : "0.45";
+      submitBtn.style.cursor = can ? "pointer" : "not-allowed";
+      return;
+    }
+
     const name = nameInput?.value.trim() || "";
     const last = lastInput?.value.trim() || "";
     const email = emailInput?.value.trim() || "";
@@ -213,6 +223,30 @@ document.addEventListener("DOMContentLoaded", () => {
   [nameInput, lastInput, emailInput].forEach((el) =>
     el?.addEventListener("input", updateSubmitState),
   );
+
+  // If a non-admin user is logged in, prefill and hide contact fields
+  const __currentUser = typeof getUser === "function" ? getUser() : null;
+  if (__currentUser && __currentUser.role !== "admin") {
+    try {
+      if (nameInput) {
+        nameInput.value = __currentUser.username || "";
+        nameInput.closest(".input-group")?.classList.add("hidden");
+      }
+      if (lastInput) {
+        lastInput.value = "";
+        lastInput.closest(".input-group")?.classList.add("hidden");
+      }
+      if (emailInput) {
+        emailInput.value = __currentUser.email || "";
+        emailInput.closest(".input-group")?.classList.add("hidden");
+      }
+      document
+        .getElementById("checkout-register-link")
+        ?.classList.add("hidden");
+    } catch (e) {
+      console.warn("Could not auto-fill/hide contact inputs", e);
+    }
+  }
 
   /* ── Expose to order.js ── */
   window.prepareCheckout = (date) => {

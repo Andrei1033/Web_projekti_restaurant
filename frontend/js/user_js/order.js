@@ -305,7 +305,10 @@ document.addEventListener("DOMContentLoaded", () => {
         10,
       );
 
-      if (!name || !surname || !email || !time) {
+      const loggedUser = typeof getUser === "function" ? getUser() : null;
+      const isNormalUser = loggedUser && loggedUser.role !== "admin";
+
+      if (!time || (!isNormalUser && !name && !surname && !email)) {
         alert("Please fill in all required fields and select a pickup time.");
         return;
       }
@@ -316,10 +319,15 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.textContent = "Placing order…";
       }
 
-      // Build payload — all items must be from currentDate
+      // Build payload — prefer logged-in non-admin user's username/email when available
+      const guestName = isNormalUser
+        ? loggedUser.username || loggedUser.name || `${name || ""}`
+        : `${name} ${surname}`;
+      const guestEmail = isNormalUser ? loggedUser.email || email : email;
+
       const payload = {
-        guest_name: `${name} ${surname}`,
-        guest_email: email,
+        guest_name: guestName,
+        guest_email: guestEmail,
         pickup_date: toDateKey(currentDate),
         pickup_time: time,
         guest_count: guestCount,
@@ -346,7 +354,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         form.reset();
         alert(
-          `Thank you, ${name}! Order #${result.order.id} confirmed.\nConfirmation sent to ${email}.`,
+          `Thank you, ${guestName}! Order #${result.order.id} confirmed.\nConfirmation sent to ${guestEmail}.`,
         );
       } else {
         alert(`Order failed: ${result.error}`);
