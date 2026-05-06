@@ -1,4 +1,4 @@
-NightWolf Kitchen on full-stack web-sovellus, jonka avulla käyttäjät voivat selata ravintolan viikoittaista ruokalistaa ja tehdä tilauksia valitsemalleen päivälle ja noutoajalle.
+NightWolf Kitchen on full-stack web-sovellus, jonka avulla käyttäjät voivat selata ravintolan viikoittaista ruokalistaa ja tehdä tilauksia.
 
 Teknologiat
 
@@ -22,7 +22,7 @@ bcrypt
 
 Palaute
 
-👉 Anna palautetta täällä:
+Anna palautetta täällä:
 [LISÄÄ GOOGLE FORM LINKKI TÄHÄN]
 
 Tekijät
