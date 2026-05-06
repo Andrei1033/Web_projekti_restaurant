@@ -1,0 +1,20 @@
+{
+  "concept": "Night Wolf on enemmän kuin ravintola – se on urbaani kokemus, jossa\nyhdistyvät pohjoismainen laatu ja villi luovuus. Keittiömme sydän on\navotuli, ja jokainen päivä on uusi mahdollisuus yllättää asiakkaamme\nvaihtuvilla teemoilla. f",
+  "diets": "Kaikki annoksemme ovat räätälöitävissä. Merkitsemme selkeästi G (Gluteeniton), L (Laktoositon) ja VEG (Vegaaninen) vaihtoehdot. Kerrothan allergioistasi henkilökunnalle. f",
+  "sustainability": "Suosimme lähituottajia ja sesongin raaka-aineita. Night Wolf toimii nollahukka-periaatteella, minimoiden ruokahävikin jokaisessa vaiheessa. f",
+  "capacity": 8000,
+  "openingHours": [
+    {
+      "day": "Mon – Fri",
+      "hours": "7:00 – 22:00"
+    },
+    {
+      "day": "Sat",
+      "hours": "11:00 – 23:00"
+    },
+    {
+      "day": "Sun",
+      "hours": "12:00 – 21:00"
+    }
+  ]
+}
