@@ -14,6 +14,21 @@
       "database": "maraim",
       "username": "maraim",
       "password": "1234"
+    },
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "mysql-24ef6abf-andrei-bace.j.aivencloud.com",
+      "port": 19741,
+      "driver": "MySQL",
+      "database": "defaultdb",
+      "name": "Web_projekti_restaurant",
+      "username": "avnadmin",
+      "password": "avnadmin"
     }
   ]
 }
