@@ -48,7 +48,7 @@ Pika-aloitus (kehittäjälle, paikallinen kehitys)
 
 3. Avaa http://localhost:5500/user_html/index.html selaimessa.
 
-Huom: Frontend muodostaa API-kutsut backendin osoitteeseen (oletus: `http://localhost:3000`). Jos backend ajetaan eri osoitteessa, muuta `frontend/js/api.js` tai vastaava API-url.
+Huom: Frontend muodostaa API-kutsut backendin osoitteeseen (oletus: `http://localhost:3000`). Jos backend ajetaan eri osoitteessa, muuta `frontend/js/api.js` ja muita vastaava API-url paikoja.
 
 ---
 
