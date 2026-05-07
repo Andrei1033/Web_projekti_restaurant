@@ -1,5 +1,15 @@
 // hero video reverse playback
+/**
+ * Description placeholder
+ *
+ * @type {*}
+ */
 const forward = document.getElementById("videoForward");
+/**
+ * Description placeholder
+ *
+ * @type {*}
+ */
 const reverse = document.getElementById("videoReverse");
 
 // forward finished → play reverse

@@ -1,4 +1,32 @@
-// Hidden admin trigger: click the footer logo 7 times within 3 seconds
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: user_js/week_menue.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: user_js/week_menue.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>// Hidden admin trigger: click the footer logo 7 times within 3 seconds
 (function () {
   const logo = document.querySelector(".simple-footer");
   if (!logo) return;
@@ -42,7 +70,7 @@
  *
  * 2. Set ORDER_PAGE_URL to your order page path.
  *
- * 3. <script src="../js/week_menu.js"></script> before </body>
+ * 3. &lt;script src="../js/week_menu.js">&lt;/script> before &lt;/body>
  *
  * LATER — swap MENU_DATA lookup for a real API call:
  *   const weekData = await fetch(`/api/menu?week=${weekKey}`).then(r => r.json());
@@ -112,7 +140,7 @@ function fmtWeekRange(weekKey) {
 
   // If same month and year
   if (
-    mon.getMonth() === sun.getMonth() &&
+    mon.getMonth() === sun.getMonth() &amp;&amp;
     mon.getFullYear() === sun.getFullYear()
   ) {
     return `${mon.toLocaleDateString("en-GB", options)} – ${sun.toLocaleDateString("en-GB", yearOptions)}`;
@@ -170,7 +198,7 @@ let currentWeekKey = TODAY_WEEK;
 /**
  * Fetch menu for a specific week from backend API
  * @param {string} weekKey - Format: "2026-W17"
- * @returns {Promise<Object>} - Menu data organized by date
+ * @returns {Promise&lt;Object>} - Menu data organized by date
  */
 async function fetchWeekMenu(weekKey) {
   try {
@@ -228,7 +256,7 @@ async function renderWeek(weekKey) {
   badge.classList.toggle("hidden", weekKey !== TODAY_WEEK);
 
   grid.classList.add("loading");
-  grid.innerHTML = '<div class="loading-spinner">Loading menu...</div>';
+  grid.innerHTML = '&lt;div class="loading-spinner">Loading menu...&lt;/div>';
 
   try {
     const weekData = await fetchWeekMenu(weekKey);
@@ -247,7 +275,7 @@ async function renderWeek(weekKey) {
         const dayData = weekData[dateStr];
         const dayDate = new Date(dateStr);
         const isToday = dateStr === new Date().toISOString().slice(0, 10);
-        const isPast = dayDate < TODAY;
+        const isPast = dayDate &lt; TODAY;
 
         // Päivän nimi API:sta
         const dayName =
@@ -262,10 +290,10 @@ async function renderWeek(weekKey) {
             "Saturday",
           ][dayDate.getDay()];
 
-        const hasMenu = dayData && dayData.theme_title;
+        const hasMenu = dayData &amp;&amp; dayData.theme_title;
 
-        const card = document.createElement(hasMenu && !isPast ? "a" : "div");
-        if (hasMenu && !isPast) {
+        const card = document.createElement(hasMenu &amp;&amp; !isPast ? "a" : "div");
+        if (hasMenu &amp;&amp; !isPast) {
           card.href = `${ORDER_PAGE_URL}?date=${dateStr}`;
         }
 
@@ -282,39 +310,39 @@ async function renderWeek(weekKey) {
 
         // Kuva-alue
         const imgHTML = `
-          <div class="wm-card-img ${hasMenu && dayData.theme_image ? "" : "wm-img-missing"}">
-            ${hasMenu && dayData.theme_image ? `<img src="${getImageUrl(dayData.theme_image)}" alt="${dayData.theme_title}" onerror="this.parentElement.classList.add('wm-img-missing'); this.remove();">` : ""}
-            ${isToday ? '<div class="wm-img-today-ribbon">Today</div>' : ""}
-          </div>`;
+          &lt;div class="wm-card-img ${hasMenu &amp;&amp; dayData.theme_image ? "" : "wm-img-missing"}">
+            ${hasMenu &amp;&amp; dayData.theme_image ? `&lt;img src="${getImageUrl(dayData.theme_image)}" alt="${dayData.theme_title}" onerror="this.parentElement.classList.add('wm-img-missing'); this.remove();">` : ""}
+            ${isToday ? '&lt;div class="wm-img-today-ribbon">Today&lt;/div>' : ""}
+          &lt;/div>`;
 
         // Tekstialue
         const bodyHTML = hasMenu
-          ? `<div class="wm-card-day-row">
-               <span class="wm-card-day">${dayName.toUpperCase()}</span>
-               <span class="wm-card-date">${fmtDate(dayDate)}</span>
-             </div>
-             <div class="wm-card-theme">${dayData.theme_title}</div>
-             <div class="wm-card-desc">${dayData.dishes?.map((d) => d.name).join(", ") || "No dishes added yet"}</div>
+          ? `&lt;div class="wm-card-day-row">
+               &lt;span class="wm-card-day">${dayName.toUpperCase()}&lt;/span>
+               &lt;span class="wm-card-date">${fmtDate(dayDate)}&lt;/span>
+             &lt;/div>
+             &lt;div class="wm-card-theme">${dayData.theme_title}&lt;/div>
+             &lt;div class="wm-card-desc">${dayData.dishes?.map((d) => d.name).join(", ") || "No dishes added yet"}&lt;/div>
              ${
-               hasMenu && !isPast
-                 ? `<div class="wm-card-cta">
+               hasMenu &amp;&amp; !isPast
+                 ? `&lt;div class="wm-card-cta">
                 Order now
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                &lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                  <polyline points="12 5 19 12 12 19"/>
-                </svg>
-              </div>`
+                  &lt;line x1="5" y1="12" x2="19" y2="12"/>
+                  &lt;polyline points="12 5 19 12 12 19"/>
+                &lt;/svg>
+              &lt;/div>`
                  : ""
              }`
-          : `<div class="wm-card-day-row">
-               <span class="wm-card-day">${dayName.toUpperCase()}</span>
-               <span class="wm-card-date">${fmtDate(dayDate)}</span>
-             </div>
-             <div class="wm-card-theme wm-theme-empty">Coming soon</div>
-             <div class="wm-empty-msg">No menu available yet.<br>Check back soon!</div>`;
+          : `&lt;div class="wm-card-day-row">
+               &lt;span class="wm-card-day">${dayName.toUpperCase()}&lt;/span>
+               &lt;span class="wm-card-date">${fmtDate(dayDate)}&lt;/span>
+             &lt;/div>
+             &lt;div class="wm-card-theme wm-theme-empty">Coming soon&lt;/div>
+             &lt;div class="wm-empty-msg">No menu available yet.&lt;br>Check back soon!&lt;/div>`;
 
-        card.innerHTML = `${imgHTML}<div class="wm-card-body">${bodyHTML}</div>`;
+        card.innerHTML = `${imgHTML}&lt;div class="wm-card-body">${bodyHTML}&lt;/div>`;
         grid.appendChild(card);
       });
 
@@ -323,7 +351,7 @@ async function renderWeek(weekKey) {
   } catch (error) {
     console.error("Error rendering week:", error);
     grid.innerHTML =
-      '<div class="error-message">Failed to load menu. Please try again later.</div>';
+      '&lt;div class="error-message">Failed to load menu. Please try again later.&lt;/div>';
     grid.classList.remove("loading", "fading");
   }
 }
@@ -353,3 +381,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderWeek(currentWeekKey);
 });
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#API_BASE">API_BASE</a></li><li><a href="global.html#CHECKOUT_API">CHECKOUT_API</a></li><li><a href="global.html#DAY_KEYS">DAY_KEYS</a></li><li><a href="global.html#DAY_NAMES">DAY_NAMES</a></li><li><a href="global.html#DIET_LABELS">DIET_LABELS</a></li><li><a href="global.html#LAST_OFFSET">LAST_OFFSET</a></li><li><a href="global.html#MIN_ADVANCE">MIN_ADVANCE</a></li><li><a href="global.html#OPENING_HOURS">OPENING_HOURS</a></li><li><a href="global.html#ORDER_PAGE_URL">ORDER_PAGE_URL</a></li><li><a href="global.html#SLOT_INTERVAL">SLOT_INTERVAL</a></li><li><a href="global.html#TODAY">TODAY</a></li><li><a href="global.html#TODAY_WEEK">TODAY_WEEK</a></li><li><a href="global.html#addToastStyles">addToastStyles</a></li><li><a href="global.html#adminLoginForm">adminLoginForm</a></li><li><a href="global.html#buildOpeningHoursMap">buildOpeningHoursMap</a></li><li><a href="global.html#cart">cart</a></li><li><a href="global.html#changeWeek">changeWeek</a></li><li><a href="global.html#checkAvailabilityAPI">checkAvailabilityAPI</a></li><li><a href="global.html#closeAllModals">closeAllModals</a></li><li><a href="global.html#createToastContainer">createToastContainer</a></li><li><a href="global.html#currentDate">currentDate</a></li><li><a href="global.html#currentWeekKey">currentWeekKey</a></li><li><a href="global.html#dateToDayKey">dateToDayKey</a></li><li><a href="global.html#escapeHtml">escapeHtml</a></li><li><a href="global.html#fetchDayMenu">fetchDayMenu</a></li><li><a href="global.html#fetchOpeningHoursPromise">fetchOpeningHoursPromise</a></li><li><a href="global.html#fetchWeekMenu">fetchWeekMenu</a></li><li><a href="global.html#fmtDate">fmtDate</a></li><li><a href="global.html#fmtWeekRange">fmtWeekRange</a></li><li><a href="global.html#forward">forward</a></li><li><a href="global.html#generateSlots">generateSlots</a></li><li><a href="global.html#getImageUrl">getImageUrl</a></li><li><a href="global.html#getToken">getToken</a></li><li><a href="global.html#loadOpeningHoursFromApi">loadOpeningHoursFromApi</a></li><li><a href="global.html#loginForm">loginForm</a></li><li><a href="global.html#logoutBtn">logoutBtn</a></li><li><a href="global.html#registerForm">registerForm</a></li><li><a href="global.html#reverse">reverse</a></li><li><a href="global.html#setButtonLoading">setButtonLoading</a></li><li><a href="global.html#setUser">setUser</a></li><li><a href="global.html#showToast">showToast</a></li><li><a href="global.html#submitOrder">submitOrder</a></li><li><a href="global.html#toDateKey">toDateKey</a></li><li><a href="global.html#toDateStr">toDateStr</a></li><li><a href="global.html#updateUIForLogin">updateUIForLogin</a></li><li><a href="global.html#updateUIForLogout">updateUIForLogout</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#validateEmail">validateEmail</a></li><li><a href="global.html#validatePassword">validatePassword</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu May 07 2026 20:56:07 GMT+0300 (Восточная Европа, летнее время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

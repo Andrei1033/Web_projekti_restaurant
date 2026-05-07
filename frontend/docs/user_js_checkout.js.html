@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: user_js/checkout.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: user_js/checkout.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * checkout.js
  * - Fills pickup time slots based on opening hours
  * - Calls GET /api/availability for real seat counts
@@ -80,13 +108,13 @@ function buildOpeningHoursMap(openingHoursArray) {
     if (!day || !hours) return;
 
     // Parse hours, e.g. "10:00 – 22:00"
-    const [openRaw, closeRaw] = hours.split(/[-–—]/).map((s) => s && s.trim());
+    const [openRaw, closeRaw] = hours.split(/[-–—]/).map((s) => s &amp;&amp; s.trim());
     const open = openRaw ? openRaw.slice(0, 5) : null;
     const close = closeRaw ? closeRaw.slice(0, 5) : null;
     if (!open || !close) return;
 
     // Day may be a range like "Mon – Fri" or single day
-    const parts = day.split(/[-–—]/).map((s) => s && s.trim());
+    const parts = day.split(/[-–—]/).map((s) => s &amp;&amp; s.trim());
     if (parts.length === 1) {
       const idx = nameToIndex(parts[0]);
       if (idx !== null) map[idx] = { open, close };
@@ -119,7 +147,7 @@ function loadOpeningHoursFromApi() {
       return r.json();
     })
     .then((data) => {
-      if (data && data.openingHours) {
+      if (data &amp;&amp; data.openingHours) {
         const map = buildOpeningHoursMap(data.openingHours);
         // Only replace keys that are populated
         OPENING_HOURS = { ...OPENING_HOURS, ...map };
@@ -185,8 +213,8 @@ function generateSlots(date) {
     : 0;
 
   const slots = [];
-  for (let m = openMin; m <= closeMin; m += SLOT_INTERVAL) {
-    if (m < nowMin) continue;
+  for (let m = openMin; m &lt;= closeMin; m += SLOT_INTERVAL) {
+    if (m &lt; nowMin) continue;
     const hh = String(Math.floor(m / 60)).padStart(2, "0");
     const mm = String(m % 60).padStart(2, "0");
     slots.push(`${hh}:${mm}`);
@@ -210,7 +238,7 @@ loadOpeningHoursFromApi();
 async function checkAvailabilityAPI(date, time, guests) {
   try {
     const res = await fetch(
-      `${CHECKOUT_API}/api/availability?date=${date}&time=${time}&guests=${guests}`,
+      `${CHECKOUT_API}/api/availability?date=${date}&amp;time=${time}&amp;guests=${guests}`,
     );
     if (!res.ok) throw new Error(`${res.status}`);
     return await res.json();
@@ -248,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedDate = date;
     seatsOk = false;
     timeSelect.innerHTML =
-      '<option value="" disabled selected>Select time…</option>';
+      '&lt;option value="" disabled selected>Select time…&lt;/option>';
 
     const slots = generateSlots(date);
 
@@ -309,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
         seatsHint.style.color = "var(--red-glow)";
       }
       seatsOk = false;
-    } else if (data.freeSeats <= 5) {
+    } else if (data.freeSeats &lt;= 5) {
       if (seatsHint) {
         seatsHint.textContent = `⚠ Only ${data.freeSeats} seat${data.freeSeats !== 1 ? "s" : ""} left!`;
         seatsHint.style.color = "#fbbf24";
@@ -338,8 +366,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const slot = timeSelect.value;
     // If a non-admin user is logged in, only require time slot + availability
     const currentUser = typeof getUser === "function" ? getUser() : null;
-    if (currentUser && currentUser.role !== "admin") {
-      const can = !!(slot && seatsOk);
+    if (currentUser &amp;&amp; currentUser.role !== "admin") {
+      const can = !!(slot &amp;&amp; seatsOk);
       submitBtn.disabled = !can;
       submitBtn.style.opacity = can ? "1" : "0.45";
       submitBtn.style.cursor = can ? "pointer" : "not-allowed";
@@ -350,7 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const last = lastInput?.value.trim() || "";
     const email = emailInput?.value.trim() || "";
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const can = !!(slot && seatsOk && name && last && emailOk);
+    const can = !!(slot &amp;&amp; seatsOk &amp;&amp; name &amp;&amp; last &amp;&amp; emailOk);
     submitBtn.disabled = !can;
     submitBtn.style.opacity = can ? "1" : "0.45";
     submitBtn.style.cursor = can ? "pointer" : "not-allowed";
@@ -377,7 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // If a non-admin user is logged in, prefill and hide contact fields
   const __currentUser = typeof getUser === "function" ? getUser() : null;
-  if (__currentUser && __currentUser.role !== "admin") {
+  if (__currentUser &amp;&amp; __currentUser.role !== "admin") {
     try {
       if (nameInput) {
         nameInput.value = __currentUser.username || "";
@@ -411,3 +439,26 @@ document.addEventListener("DOMContentLoaded", () => {
     p.then(() => populateSlots(d)).catch(() => populateSlots(d));
   };
 });
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#API_BASE">API_BASE</a></li><li><a href="global.html#CHECKOUT_API">CHECKOUT_API</a></li><li><a href="global.html#DAY_KEYS">DAY_KEYS</a></li><li><a href="global.html#DAY_NAMES">DAY_NAMES</a></li><li><a href="global.html#DIET_LABELS">DIET_LABELS</a></li><li><a href="global.html#LAST_OFFSET">LAST_OFFSET</a></li><li><a href="global.html#MIN_ADVANCE">MIN_ADVANCE</a></li><li><a href="global.html#OPENING_HOURS">OPENING_HOURS</a></li><li><a href="global.html#ORDER_PAGE_URL">ORDER_PAGE_URL</a></li><li><a href="global.html#SLOT_INTERVAL">SLOT_INTERVAL</a></li><li><a href="global.html#TODAY">TODAY</a></li><li><a href="global.html#TODAY_WEEK">TODAY_WEEK</a></li><li><a href="global.html#addToastStyles">addToastStyles</a></li><li><a href="global.html#adminLoginForm">adminLoginForm</a></li><li><a href="global.html#buildOpeningHoursMap">buildOpeningHoursMap</a></li><li><a href="global.html#cart">cart</a></li><li><a href="global.html#changeWeek">changeWeek</a></li><li><a href="global.html#checkAvailabilityAPI">checkAvailabilityAPI</a></li><li><a href="global.html#closeAllModals">closeAllModals</a></li><li><a href="global.html#createToastContainer">createToastContainer</a></li><li><a href="global.html#currentDate">currentDate</a></li><li><a href="global.html#currentWeekKey">currentWeekKey</a></li><li><a href="global.html#dateToDayKey">dateToDayKey</a></li><li><a href="global.html#escapeHtml">escapeHtml</a></li><li><a href="global.html#fetchDayMenu">fetchDayMenu</a></li><li><a href="global.html#fetchOpeningHoursPromise">fetchOpeningHoursPromise</a></li><li><a href="global.html#fetchWeekMenu">fetchWeekMenu</a></li><li><a href="global.html#fmtDate">fmtDate</a></li><li><a href="global.html#fmtWeekRange">fmtWeekRange</a></li><li><a href="global.html#forward">forward</a></li><li><a href="global.html#generateSlots">generateSlots</a></li><li><a href="global.html#getImageUrl">getImageUrl</a></li><li><a href="global.html#getToken">getToken</a></li><li><a href="global.html#loadOpeningHoursFromApi">loadOpeningHoursFromApi</a></li><li><a href="global.html#loginForm">loginForm</a></li><li><a href="global.html#logoutBtn">logoutBtn</a></li><li><a href="global.html#registerForm">registerForm</a></li><li><a href="global.html#reverse">reverse</a></li><li><a href="global.html#setButtonLoading">setButtonLoading</a></li><li><a href="global.html#setUser">setUser</a></li><li><a href="global.html#showToast">showToast</a></li><li><a href="global.html#submitOrder">submitOrder</a></li><li><a href="global.html#toDateKey">toDateKey</a></li><li><a href="global.html#toDateStr">toDateStr</a></li><li><a href="global.html#updateUIForLogin">updateUIForLogin</a></li><li><a href="global.html#updateUIForLogout">updateUIForLogout</a></li><li><a href="global.html#user">user</a></li><li><a href="global.html#validateEmail">validateEmail</a></li><li><a href="global.html#validatePassword">validatePassword</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu May 07 2026 20:56:07 GMT+0300 (Восточная Европа, летнее время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
