@@ -27,6 +27,11 @@ Tekijät:
 - Andrei Tsizikov
 - Khaled Marai
 
+Koodin dokumentaatio:
+
+- ApiDoc: https://users.metropolia.fi/~andreits/Web_projekti_restaurant/apidoc/
+- JSDoc https://users.metropolia.fi/~andreits/Web_projekti_restaurant/docs/
+
 Lisätiedot ja kaikki lähteet löytyvät reposta.
 
 ---
