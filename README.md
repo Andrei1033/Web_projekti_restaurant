@@ -19,8 +19,8 @@ NightWolf Kitchen on full-stack web-sovellus, jossa käyttäjät voivat selata r
 **Osa 1 — Linkit ja tekijät**
 
 - Demo (esimerkki): https://example.com/demo
-- Palautelomake (esimerkki): https://example.com/feedback
-- API-dokumentaatio (esimerkki): https://example.com/api-docs
+- Palautelomake: https://docs.google.com/forms/d/e/1FAIpQLSdhYma1Dus7gMTKN2NlvPXgnqo298cqScffok_GKGHOGCtAsQ/viewform?usp=dialog
+- Palautelomake (tulokset): https://docs.google.com/spreadsheets/d/1GxFNkBPVWD2PJxDYw2PKdSmmbGieF1NdJsiA_VYVyC4/edit?usp=sharing
 
 Tekijät:
 
