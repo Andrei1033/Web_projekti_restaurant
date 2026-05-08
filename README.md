@@ -19,6 +19,7 @@ NightWolf Kitchen on full-stack web-sovellus, jossa käyttäjät voivat selata r
 **Osa 1 — Linkit ja tekijät**
 
 - Demo : https://users.metropolia.fi/~andreits/Web_projekti_restaurant/frontend/user_html/index.html
+- testa admin ominaisuudet -> s posti admin@gmail.com || salasana admin1234
 - Palautelomake: https://docs.google.com/forms/d/e/1FAIpQLSdhYma1Dus7gMTKN2NlvPXgnqo298cqScffok_GKGHOGCtAsQ/viewform?usp=dialog
 - Palautelomake (tulokset): https://docs.google.com/spreadsheets/d/1GxFNkBPVWD2PJxDYw2PKdSmmbGieF1NdJsiA_VYVyC4/edit?usp=sharing
 
