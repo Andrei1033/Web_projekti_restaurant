@@ -135,18 +135,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Call API to update profile
-        const response = await fetch("http://localhost:3000/api/auth/profile", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
+        const response = await fetch(
+          "http://10.120.32.64/app/api/auth/profile",
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+            body: JSON.stringify({
+              username: name,
+              phone,
+              password: password || undefined,
+            }),
           },
-          body: JSON.stringify({
-            username: name,
-            phone,
-            password: password || undefined,
-          }),
-        });
+        );
 
         const result = await response.json();
 

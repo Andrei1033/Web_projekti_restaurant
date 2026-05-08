@@ -1,5 +1,5 @@
 // ===== RUOKALISTA.JS =====
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = "http://10.120.32.64/app/api";
 
 // ===== TOKEN HALLINTA =====
 
@@ -363,7 +363,7 @@ async function loadGalleryImages(targetInputId, currentValue) {
       .map(
         (img) => `
       <div class="gallery-item ${currentValue === img ? "selected" : ""}" data-url="${img}">
-        <img src="http://localhost:3000${img}" alt="${img}">
+        <img src="http://10.120.32.64/app${img}" alt="${img}">
         <div class="gallery-item-overlay">
           <button class="select-image-btn">✓ Valitse</button>
         </div>
@@ -406,7 +406,7 @@ function updateImagePreview(inputId, imageUrl) {
     if (imageUrl) {
       previewContainer.innerHTML = `
         <div class="image-preview">
-          <img src="http://localhost:3000${imageUrl}" alt="Esikatselu">
+          <img src="http://10.120.32.64/app${imageUrl}" alt="Esikatselu">
           <button class="remove-image-btn" onclick="removeImage('${inputId}')">✕</button>
         </div>
       `;
@@ -572,7 +572,7 @@ function renderDays() {
           <span class="theme-badge">🎨 ${dayData.theme}</span>
           ${
             dayData.theme_image
-              ? `<img src="http://localhost:3000${dayData.theme_image}" alt="${dayData.theme}" class="theme-preview">`
+              ? `<img src="http://10.120.32.64/app${dayData.theme_image}" alt="${dayData.theme}" class="theme-preview">`
               : ""
           }
         </div>`
@@ -609,7 +609,7 @@ function renderDays() {
               </div>
               ${
                 dish.current_dish_image
-                  ? `<img src="http://localhost:3000${dish.current_dish_image}" class="dish-thumb">`
+                  ? `<img src="http://10.120.32.64/app${dish.current_dish_image}" class="dish-thumb">`
                   : ""
               }
             </div>

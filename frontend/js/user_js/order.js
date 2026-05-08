@@ -14,7 +14,7 @@
  */
 
 // ── Config
-const API_BASE = "http://localhost:3000";
+const API_BASE = "http://10.120.32.64/app";
 
 // ── Diet tags ──
 const DIET_LABELS = {

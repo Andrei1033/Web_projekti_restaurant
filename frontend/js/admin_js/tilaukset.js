@@ -16,7 +16,7 @@ function checkAuth() {
 }
 
 // API konfiguraatio
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://10.120.32.64/app";
 
 // Globaalit muuttujat
 let allOrders = [];

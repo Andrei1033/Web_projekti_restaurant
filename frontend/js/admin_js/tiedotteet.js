@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const capacityEl = document.getElementById("capacity");
   const saveAboutBtn = document.getElementById("save-about");
 
-  const API_BASE = "http://127.0.0.1:3000";
+  const API_BASE = "http://10.120.32.64/app";
 
   function getHeaders(isJson = false) {
     const token = localStorage.getItem("token");

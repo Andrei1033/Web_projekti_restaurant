@@ -190,7 +190,7 @@ if (loginForm) {
     setButtonLoading(submitBtn, true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
+      const response = await fetch("http://10.120.32.64/app/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -272,13 +272,16 @@ if (registerForm) {
     setButtonLoading(submitBtn, true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "http://10.120.32.64/app/api/auth/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, email, password }),
         },
-        body: JSON.stringify({ username, email, password }),
-      });
+      );
 
       const json = await response.json();
 
@@ -343,7 +346,7 @@ if (adminLoginForm) {
     setButtonLoading(submitBtn, true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/auth/login", {
+      const response = await fetch("http://10.120.32.64/app/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

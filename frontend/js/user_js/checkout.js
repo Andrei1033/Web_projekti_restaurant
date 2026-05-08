@@ -7,7 +7,7 @@
  * window.prepareCheckout(date) is called by order.js before opening modal.
  */
 
-const CHECKOUT_API = "http://localhost:3000";
+const CHECKOUT_API = "http://10.120.32.64/app";
 
 // Will be populated from /api/about openingHours (fallback below)
 let OPENING_HOURS = {

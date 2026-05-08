@@ -52,7 +52,7 @@
 
 /* ── Config ────────────────────────────────────────────────── */
 const ORDER_PAGE_URL = "order.html";
-const API_BASE = "http://localhost:3000/api";
+const API_BASE = "http://10.120.32.64/app/api";
 
 /* ── ISO week helpers ───────────────────────────────────────── */
 
@@ -165,7 +165,7 @@ function getImageUrl(imagePath) {
   const cleanPath = imagePath.replace(/^\/+/, ""); // Poista alusta olevat /
 
   // Käytetään staattista base URL:ia (ilman /api)
-  return `http://localhost:3000/${cleanPath}`;
+  return `http://10.120.32.64/app/${cleanPath}`;
 }
 
 /* ── Render ─────────────────────────────────────────────────── */
