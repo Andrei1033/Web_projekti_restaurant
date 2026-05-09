@@ -8,5 +8,9 @@ export default defineConfig([
     plugins: {js},
     extends: ['js/recommended'],
     languageOptions: {globals: globals.node},
+    env: {
+      jest: true,
+      node: true,
+    },
   },
 ]);
