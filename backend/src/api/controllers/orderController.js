@@ -35,9 +35,9 @@ const toTimeStr = (timeStr) => {
 // Send order confirmation email placeholder — replace with nodemailer later
 const sendConfirmationEmail = async (order) => {
   // maybe later: implement with nodemailer
-  console.log(
-    `[EMAIL] Order #${order.id} confirmed → ${order.guest_email || 'registered user'}`
-  );
+  //console.log(
+  `[EMAIL] Order #${order.id} confirmed → ${order.guest_email || 'registered user'}`;
+  //);
 };
 
 /**
