@@ -103,6 +103,9 @@ npm run dev
 
 # tai normaalisti
 npm start
+
+# Aja rakennetesti:
+npm run test
 ```
 
 API-endpointit ja reitit löytyvät kansiosta `backend/src/api/` (esim. `routes`, `controllers`, `models`).
